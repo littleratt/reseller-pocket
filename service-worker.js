@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reseller-pocket-v1';
+const CACHE_NAME = 'reseller-pocket-v5-variations-reports';
 const APP_FILES = ['./', './index.html', './cloud-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {
