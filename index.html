@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#6d4aff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Reseller Pocket — Photos & Editable Entries</title>
+  <style>
+    :root {
+      --purple:#6d4aff;
+      --purple-dark:#4d31c7;
+      --lavender:#f1edff;
+      --pink:#ff5f9e;
+      --mint:#dff8eb;
+      --green:#168957;
+      --yellow:#fff2bd;
+      --orange:#ff8a4c;
+      --red:#c73838;
+      --ink:#202338;
+      --muted:#6f7282;
+      --line:#e4e6ee;
+      --card:#ffffff;
+      --bg:#f7f7fb;
+      --shadow:0 8px 28px rgba(39,31,92,.10);
+      --radius:22px;
+    }
+    * { box-sizing:border-box; }
+    html { -webkit-text-size-adjust:100%; }
+    body {
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Inter, ui-rounded, "SF Pro Rounded", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height:100vh;
+      padding-bottom:92px;
+    }
+    button, input, select, textarea { font:inherit; }
+    button { -webkit-tap-highlight-color:transparent; }
+    .app-shell { max-width:760px; margin:0 auto; min-height:100vh; }
+    .topbar {
+      position:sticky; top:0; z-index:20;
+      background:rgba(247,247,251,.94); backdrop-filter:blur(18px);
+      padding:calc(12px + env(safe-area-inset-top)) 18px 12px;
+      border-bottom:1px solid rgba(228,230,238,.75);
+    }
+    .topbar-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand-bubble {
+      width:42px; height:42px; border-radius:15px; display:grid; place-items:center;
+      background:linear-gradient(145deg,var(--purple),var(--pink)); color:white; font-size:22px;
+      box-shadow:0 8px 18px rgba(109,74,255,.25);
+    }
+    .brand h1 { font-size:18px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .brand p { font-size:12px; color:var(--muted); margin:2px 0 0; }
+    .sync-pill { font-size:11px; padding:7px 10px; border-radius:999px; background:var(--mint); color:var(--green); font-weight:800; white-space:nowrap; }
+    main { padding:18px; }
+    .screen { display:none; animation:fadeIn .18s ease; }
+    .screen.active { display:block; }
+    @keyframes fadeIn { from { opacity:.35; transform:translateY(4px); } to { opacity:1; transform:none; } }
+    .hero {
+      background:linear-gradient(145deg,#7656ff 0%,#a24dff 52%,#ff67a2 100%);
+      color:white; border-radius:28px; padding:22px; box-shadow:var(--shadow); overflow:hidden; position:relative;
+    }
+    .hero:after { content:""; position:absolute; width:170px; height:170px; border-radius:50%; right:-55px; top:-70px; background:rgba(255,255,255,.14); }
+    .hero small { opacity:.9; font-weight:700; }
+    .hero h2 { margin:6px 0 8px; font-size:28px; line-height:1.08; }
+    .hero p { margin:0; opacity:.94; line-height:1.45; max-width:90%; }
+    .hero-stat { display:flex; gap:12px; margin-top:18px; position:relative; z-index:1; }
+    .hero-stat > div { flex:1; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.17); border-radius:17px; padding:12px; }
+    .hero-stat strong { display:block; font-size:20px; }
+    .hero-stat span { font-size:11px; opacity:.86; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:24px 2px 12px; }
+    .section-title h2, .section-title h3 { margin:0; }
+    .section-title h2 { font-size:22px; }
+    .section-title h3 { font-size:17px; }
+    .section-title span { font-size:12px; color:var(--muted); }
+    .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .action-card {
+      border:0; background:var(--card); border-radius:22px; padding:18px 14px; min-height:142px;
+      text-align:left; color:var(--ink); box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:space-between;
+      transition:transform .1s ease;
+    }
+    .action-card:active { transform:scale(.98); }
+    .action-card .icon { width:52px; height:52px; border-radius:18px; display:grid; place-items:center; font-size:27px; }
+    .action-card strong { font-size:17px; display:block; margin-top:12px; }
+    .action-card small { color:var(--muted); line-height:1.3; display:block; margin-top:4px; }
+    .sell .icon { background:#e7e1ff; }
+    .buy .icon { background:#ffe0ee; }
+    .inventory .icon { background:#dff8eb; }
+    .expense .icon { background:#fff0d6; }
+    .create .icon { background:#e9f5ff; }
+    .trade .icon { background:#e7f8f5; }
+    .trade-value-card { border-left:5px solid #168f83; background:#f1fcfa; }
+    .segmented { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:5px; border-radius:17px; background:#f0f1f6; }
+    .segment-btn { border:0; border-radius:13px; padding:12px 9px; background:transparent; color:var(--muted); font-weight:900; font-size:12px; }
+    .segment-btn.active { background:white; color:var(--purple-dark); box-shadow:0 4px 12px rgba(40,37,78,.10); }
+    .value-summary { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+    .value-summary > div { border-radius:15px; padding:12px; background:#f7f7fb; }
+    .value-summary strong { display:block; font-size:17px; }
+    .value-summary span { display:block; font-size:10px; color:var(--muted); margin-top:3px; font-weight:800; }
+    .coach-card, .card {
+      background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); margin-top:14px;
+    }
+    .coach-card { border-left:5px solid var(--purple); }
+    .coach-card h3 { margin:0 0 7px; font-size:16px; }
+    .coach-card p { margin:0; color:var(--muted); line-height:1.5; }
+    .backup-warning { border-left-color:var(--orange); background:#fffaf3; }
+    .back-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .back-btn { width:42px; height:42px; border:0; border-radius:14px; background:white; box-shadow:var(--shadow); font-size:21px; }
+    .screen-heading h2 { margin:0; font-size:24px; }
+    .screen-heading p { margin:5px 0 0; color:var(--muted); line-height:1.35; }
+    .form-card { background:white; border-radius:24px; padding:18px; box-shadow:var(--shadow); margin-top:14px; }
+    .form-card h3 { margin:0 0 14px; font-size:17px; }
+    .field { margin-bottom:14px; }
+    .field:last-child { margin-bottom:0; }
+    label { display:block; font-size:13px; font-weight:800; margin-bottom:7px; color:#3f4252; }
+    input, select, textarea {
+      width:100%; border:1.5px solid var(--line); background:#fbfbfd; color:var(--ink); border-radius:15px;
+      padding:13px 14px; min-height:48px; outline:none; transition:border .15s, box-shadow .15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color:var(--purple); box-shadow:0 0 0 4px rgba(109,74,255,.10); background:white; }
+    textarea { resize:vertical; min-height:86px; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .hint { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.35; }
+    .line-card { border:1.5px solid var(--line); border-radius:20px; padding:14px; margin:12px 0; background:#fdfdff; }
+    .line-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+    .line-card-head strong { font-size:15px; }
+    .mini-btn { border:0; border-radius:12px; padding:9px 12px; background:var(--lavender); color:var(--purple-dark); font-weight:800; }
+    .danger-btn { background:#ffe8e8; color:var(--red); }
+    .add-line-btn { width:100%; border:2px dashed #bfb2ff; background:#f6f3ff; color:var(--purple-dark); border-radius:17px; padding:14px; font-weight:900; margin-top:8px; }
+    .primary-btn {
+      width:100%; border:0; border-radius:18px; padding:16px 18px; color:white; font-weight:900; font-size:16px;
+      background:linear-gradient(135deg,var(--purple),#8e55ff); box-shadow:0 10px 22px rgba(109,74,255,.25); margin-top:16px;
+    }
+    .primary-btn:active { transform:translateY(1px); }
+    .secondary-btn { width:100%; border:0; border-radius:16px; padding:14px; background:var(--lavender); color:var(--purple-dark); font-weight:900; margin-top:10px; }
+    .price-tip { background:var(--mint); color:var(--green); border-radius:14px; padding:11px 12px; font-size:12px; font-weight:800; margin-top:10px; }
+    details { border-top:1px solid var(--line); margin-top:12px; padding-top:10px; }
+    summary { cursor:pointer; font-size:13px; font-weight:900; color:var(--purple-dark); }
+    .photo-preview { width:78px; height:78px; border-radius:16px; object-fit:cover; background:var(--lavender); display:none; }
+    .photo-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:8px; }
+    .photo-source-btn { display:flex; align-items:center; justify-content:center; gap:7px; min-height:48px; padding:11px 10px; border-radius:15px; background:var(--lavender); color:var(--purple-dark); font-size:12px; font-weight:900; text-align:center; cursor:pointer; }
+    .photo-source-btn input { display:none; }
+    .photo-preview-row { display:flex; align-items:center; gap:11px; margin-top:10px; padding:9px; border-radius:17px; background:#f7f7fb; }
+    .photo-preview-row .photo-preview { display:block; flex:0 0 auto; }
+    .photo-preview-row > div { min-width:0; }
+    .photo-preview-row small { display:block; color:var(--muted); line-height:1.35; margin-bottom:6px; }
+
+    .search-row { display:flex; gap:9px; margin:12px 0; }
+    .search-row input { flex:1; }
+    .search-row select { width:135px; }
+    .inventory-list { display:grid; gap:12px; }
+    .inventory-card { background:white; border-radius:21px; padding:14px; box-shadow:var(--shadow); display:grid; grid-template-columns:64px 1fr; gap:13px; }
+    .item-photo { width:64px; height:64px; border-radius:18px; object-fit:cover; background:var(--lavender); display:grid; place-items:center; font-size:31px; }
+    .item-main { min-width:0; }
+    .item-top { display:flex; justify-content:space-between; gap:8px; align-items:start; }
+    .item-top h3 { margin:0; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-top small { color:var(--muted); display:block; margin-top:3px; }
+    .stock-pill { padding:6px 9px; border-radius:999px; background:var(--mint); color:var(--green); font-size:11px; font-weight:900; white-space:nowrap; }
+    .stock-pill.watch { background:var(--yellow); color:#8a6500; }
+    .stock-pill.slow { background:#ffe8e8; color:var(--red); }
+    .item-numbers { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:11px; }
+    .item-numbers div { background:#f7f7fb; border-radius:12px; padding:8px; }
+    .item-numbers strong { display:block; font-size:13px; }
+    .item-numbers span { display:block; color:var(--muted); font-size:9px; margin-top:2px; }
+    .action-note { font-size:11px; color:var(--muted); margin-top:9px; line-height:1.35; }
+    .empty { text-align:center; padding:35px 18px; background:white; border-radius:24px; box-shadow:var(--shadow); }
+    .empty .big { font-size:46px; }
+    .empty h3 { margin:8px 0 5px; }
+    .empty p { color:var(--muted); margin:0; line-height:1.4; }
+    .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .stat-card { background:white; border-radius:20px; padding:15px; box-shadow:var(--shadow); }
+    .stat-card span { display:block; font-size:11px; color:var(--muted); font-weight:700; }
+    .stat-card strong { display:block; font-size:22px; margin-top:5px; }
+    .stat-card.good strong { color:var(--green); }
+    .stat-card.warn strong { color:#a16c00; }
+    .progress-track { width:100%; height:12px; border-radius:999px; background:#ececf4; overflow:hidden; margin-top:10px; }
+    .progress-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--purple),var(--pink)); min-width:2px; }
+    .rank-row { display:grid; grid-template-columns:35px 1fr auto; gap:10px; align-items:center; padding:11px 0; border-bottom:1px solid var(--line); }
+    .rank-row:last-child { border-bottom:0; }
+    .rank { width:30px; height:30px; display:grid; place-items:center; border-radius:11px; background:var(--lavender); color:var(--purple-dark); font-weight:900; }
+    .rank-row strong { font-size:14px; }
+    .rank-row small { display:block; color:var(--muted); margin-top:2px; }
+    .rank-value { font-weight:900; color:var(--green); }
+    .bar-row { margin:13px 0; }
+    .bar-label { display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:6px; gap:10px; }
+    .bar { height:12px; border-radius:999px; background:#ececf4; overflow:hidden; }
+    .bar > div { height:100%; border-radius:inherit; background:linear-gradient(90deg,#7a5aff,#ff6aa5); }
+    .locked { text-align:center; padding:30px 18px; }
+    .lock-icon { width:76px; height:76px; border-radius:25px; background:var(--lavender); display:grid; place-items:center; font-size:38px; margin:0 auto 14px; }
+    .parent-tabs { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; margin:14px 0; scrollbar-width:none; }
+    .parent-tabs::-webkit-scrollbar { display:none; }
+    .tab-btn { flex:0 0 auto; border:0; border-radius:999px; padding:10px 13px; background:white; color:var(--muted); box-shadow:0 4px 14px rgba(40,37,78,.07); font-size:12px; font-weight:900; }
+    .tab-btn.active { background:var(--purple); color:white; }
+    .parent-panel { display:none; }
+    .parent-panel.active { display:block; }
+    .record-row { background:white; border-radius:17px; padding:13px; margin-bottom:10px; box-shadow:0 5px 18px rgba(40,37,78,.07); }
+    .record-row-top { display:flex; align-items:start; justify-content:space-between; gap:8px; }
+    .record-row h4 { margin:0; font-size:14px; }
+    .record-row p { margin:4px 0 0; color:var(--muted); font-size:11px; line-height:1.35; }
+    .record-amount { font-weight:900; white-space:nowrap; }
+    .record-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:9px; }
+    .inline-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .file-btn { display:block; text-align:center; padding:14px; border-radius:16px; background:var(--lavender); color:var(--purple-dark); font-weight:900; cursor:pointer; }
+    .file-btn input { display:none; }
+    .toast {
+      position:fixed; left:50%; bottom:98px; transform:translateX(-50%) translateY(25px);
+      background:#202338; color:white; border-radius:16px; padding:13px 16px; max-width:calc(100vw - 36px); width:max-content;
+      box-shadow:0 12px 35px rgba(0,0,0,.23); z-index:100; opacity:0; pointer-events:none; transition:.24s ease; font-size:13px; font-weight:800; text-align:center;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .bottom-nav {
+      position:fixed; z-index:30; bottom:0; left:0; right:0; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.96); backdrop-filter:blur(20px); border-top:1px solid var(--line);
+    }
+    .nav-inner { max-width:760px; margin:0 auto; display:grid; grid-template-columns:repeat(5,1fr); }
+    .nav-btn { border:0; background:transparent; color:#8a8d9a; min-height:58px; border-radius:16px; font-size:10px; font-weight:800; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; }
+    .nav-btn b { font-size:21px; line-height:1; }
+    .nav-btn.active { color:var(--purple); background:var(--lavender); }
+    .modal {
+      position:fixed; inset:0; z-index:200; display:none; align-items:flex-end; justify-content:center; background:rgba(28,27,42,.48); padding:15px;
+    }
+    .modal.show { display:flex; }
+    .modal-card { background:white; border-radius:28px; padding:21px; width:min(620px,100%); max-height:92vh; overflow:auto; box-shadow:0 20px 60px rgba(0,0,0,.28); }
+    .modal-card h2 { margin:0 0 6px; }
+    .modal-card > p { color:var(--muted); margin:0 0 18px; line-height:1.4; }
+    .welcome-logo { width:72px; height:72px; border-radius:24px; display:grid; place-items:center; font-size:38px; color:white; margin-bottom:14px; background:linear-gradient(145deg,var(--purple),var(--pink)); }
+    .tiny { font-size:10px; color:var(--muted); line-height:1.35; }
+    .hidden { display:none !important; }
+    @media (max-width:390px) {
+      main { padding:14px; }
+      .hero h2 { font-size:25px; }
+      .action-card { min-height:132px; padding:15px 12px; }
+      .two-col { grid-template-columns:1fr; gap:0; }
+      .search-row { flex-direction:column; }
+      .search-row select { width:100%; }
+    }
+    .sync-pill.cloud { background:#e8f6ee; color:#027a48; }
+    .sync-pill.syncing { background:#fff6d8; color:#8a5a00; }
+    .sync-pill.offline { background:#fff0e6; color:#a33b00; }
+    .sync-pill.error { background:#fee4e2; color:#b42318; }
+    .cloud-status-card { border:1px solid #d9d3ef; background:linear-gradient(135deg,#fbfaff,#f3f0fb); }
+    .cloud-status-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .cloud-dot { width:11px; height:11px; border-radius:50%; display:inline-block; background:#98a2b3; margin-right:7px; }
+    .cloud-dot.connected { background:#12b76a; box-shadow:0 0 0 4px rgba(18,183,106,.12); }
+    .cloud-dot.syncing { background:#f79009; }
+    .cloud-dot.error { background:#f04438; }
+    .cloud-small { font-size:12px; color:var(--muted); line-height:1.45; }
+    .cloud-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+    .cloud-actions .primary-btn,.cloud-actions .secondary-btn { margin:0; }
+    .backup-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid #ececf2; }
+    .backup-row:last-child { border-bottom:0; }
+    .connection-banner { margin:0 16px 10px; padding:10px 13px; border-radius:14px; background:#fff6d8; color:#7a5300; font-size:12px; font-weight:800; display:none; }
+    .connection-banner.show { display:block; }
+    @media print {
+      .topbar,.bottom-nav,.back-row,.primary-btn,.secondary-btn,.mini-btn,.parent-tabs { display:none !important; }
+      body { padding:0; background:white; }
+      main { padding:0; }
+      .screen { display:none !important; }
+      #parentScreen.active { display:block !important; }
+      .card,.stat-card,.record-row { box-shadow:none; border:1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-row">
+        <div class="brand">
+          <div class="brand-bubble">✨</div>
+          <div style="min-width:0">
+            <h1 id="headerBusinessName">Reseller Pocket</h1>
+            <p id="headerSubtitle">Simple business tracker</p>
+          </div>
+        </div>
+        <button id="syncPill" class="sync-pill" type="button" onclick="openCloudModal()">● Saved on phone</button>
+      </div>
+    </header>
+    <div id="connectionBanner" class="connection-banner"></div>
+
+    <main>
+      <section id="homeScreen" class="screen active"></section>
+      <section id="purchaseScreen" class="screen"></section>
+      <section id="createdScreen" class="screen"></section>
+      <section id="tradeScreen" class="screen"></section>
+      <section id="saleScreen" class="screen"></section>
+      <section id="expenseScreen" class="screen"></section>
+      <section id="inventoryScreen" class="screen"></section>
+      <section id="progressScreen" class="screen"></section>
+      <section id="parentScreen" class="screen"></section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-inner">
+      <button class="nav-btn active" data-screen="homeScreen" onclick="showScreen('homeScreen')"><b>🏠</b>Home</button>
+      <button class="nav-btn" data-screen="saleScreen" onclick="openSaleScreen()"><b>💰</b>Sell</button>
+      <button class="nav-btn" data-screen="inventoryScreen" onclick="showScreen('inventoryScreen')"><b>📦</b>Inventory</button>
+      <button class="nav-btn" data-screen="progressScreen" onclick="showScreen('progressScreen')"><b>📈</b>Progress</button>
+      <button class="nav-btn" data-screen="parentScreen" onclick="showScreen('parentScreen')"><b>🔒</b>Parent</button>
+    </div>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="onboardingModal" class="modal">
+    <div class="modal-card">
+      <div class="welcome-logo">🛍️</div>
+      <h2>Set up her reseller app</h2>
+      <p>This takes about a minute. She will only see simple buttons and short forms.</p>
+      <div class="field"><label>Business name</label><input id="setupBusiness" placeholder="Example: Trendy Finds" /></div>
+      <div class="field"><label>Her first name</label><input id="setupDaughter" placeholder="Example: Ella" /></div>
+      <div class="field"><label>Parent name</label><input id="setupParent" placeholder="Mom, Dad, or a name" /></div>
+      <div class="field"><label>Create a 4-digit parent PIN</label><input id="setupPin" type="password" inputmode="numeric" maxlength="4" placeholder="4 digits" /></div>
+      <div class="field"><label>Existing amount owed to parent</label><input id="setupLoan" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" placeholder="0.00" /><div class="hint">Use this only for earlier funding that will not be entered as past purchases.</div></div>
+      <button class="primary-btn" onclick="finishSetup()">Create Her App ✨</button>
+      <button class="secondary-btn" onclick="openCloudModal(true)">Already set up on another phone? Connect Cloud Sync</button>
+    </div>
+  </div>
+
+  <div id="cloudModal" class="modal">
+    <div class="modal-card" id="cloudModalCard"></div>
+  </div>
+
+<script src="cloud-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+
+const STORAGE_KEY = 'teen_reseller_pocket_v1';
+const CLOUD_CONFIG_KEY = 'teen_reseller_cloud_config_v1';
+const CATEGORIES = ['Handmade / Floral','Clothing','Shoes','Accessories','Beauty','Collectibles','Electronics','Home','Toys','Other'];
+const PLATFORMS = ['Instagram','TikTok','Facebook Marketplace','Depop','Poshmark','Mercari','eBay','In Person','Other'];
+const EXPENSE_CATEGORIES = ['Packaging','Shipping','Advertising','Equipment','Supplies','Travel / Mileage','Phone / Internet','Refunds','Other'];
+const PAID_BY = ['Parent Loan','Business Cash','Gift / Free','Personal'];
+const RECEIVED_DISPOSITIONS = ['Add to inventory for resale','Keep or use — count as non-cash trade value'];
+const MONEY_TYPES = ['Additional Parent Cash Advance','Repayment to Parent','Owner Deposit','Owner Withdrawal'];
+const METHODS = ['Cash','Venmo','Cash App','PayPal','Zelle','Bank Transfer','Other'];
+
+const DEFAULT_STATE = {
+  version:4,
+  meta:{modifiedAt:''},
+  setupComplete:false,
+  settings:{
+    businessName:'Reseller Pocket', daughterName:'', parentName:'Parent', pin:'2468',
+    defaultFeePercent:15, defaultFixedFee:0, defaultShipping:0, defaultPackaging:0.75,
+    targetMargin:40, lowMargin:20, slowDays:60, watchDays:30, defaultLaborRate:12, startingLoan:0, autoApplySalesToLoan:true, lastBackup:''
+  },
+  purchases:[],
+  sales:[],
+  trades:[],
+  expenses:[],
+  money:[],
+  counters:{purchase:0,sale:0,trade:0,expense:0,money:0,item:0}
+};
+
+let state = loadState();
+let parentUnlocked = false;
+let purchaseDraft = [];
+let createdDraft = [];
+let tradeGiveDraft = [];
+let tradeReceiveDraft = [];
+let saleDraft = [];
+let purchaseMeta = {date:'',paidBy:'Parent Loan',source:''};
+let createdMeta = {date:'',paidBy:'Parent Loan'};
+let tradeMeta = {date:'',partner:'',notes:''};
+let saleMeta = {date:'',status:'Paid',platform:'Instagram',notes:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'};
+let expenseDraft = {date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''};
+let editingPurchaseId = '';
+let editingTradeId = '';
+let editingSaleId = '';
+let editingExpenseId = '';
+let editingMoneyId = '';
+let currentParentTab = 'summary';
+let toastTimer;
+let currentScreen = 'homeScreen';
+let cloudConfig = loadCloudConfig();
+let supabaseClient = null;
+let cloudUser = null;
+let cloudChannel = null;
+let cloudPushTimer = null;
+let cloudSyncInProgress = false;
+let cloudStatus = 'phone';
+let cloudStatusMessage = 'Saved on phone';
+let cloudModalFromOnboarding = false;
+let cloudCheckTimer = null;
+
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function normalizeState(saved){
+  const source=saved&&typeof saved==='object'?saved:{};
+  return {
+    ...clone(DEFAULT_STATE), ...source,
+    meta:{...clone(DEFAULT_STATE.meta), ...(source.meta||{})},
+    settings:{...clone(DEFAULT_STATE.settings), ...(source.settings||{})},
+    counters:{...clone(DEFAULT_STATE.counters), ...(source.counters||{})},
+    purchases:Array.isArray(source.purchases)?source.purchases:[],
+    sales:Array.isArray(source.sales)?source.sales:[],
+    trades:Array.isArray(source.trades)?source.trades:[],
+    expenses:Array.isArray(source.expenses)?source.expenses:[],
+    money:Array.isArray(source.money)?source.money:[]
+  };
+}
+function loadState(){
+  try {
+    const raw=localStorage.getItem(STORAGE_KEY);
+    return raw?normalizeState(JSON.parse(raw)):clone(DEFAULT_STATE);
+  } catch(e){ console.error(e); return clone(DEFAULT_STATE); }
+}
+function loadCloudConfig(){
+  let saved={};
+  try{ saved=JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'{}')||{}; }catch(e){}
+  const embedded=window.RESELLER_CLOUD_CONFIG||{};
+  return {
+    url:embedded.url||saved.url||'',
+    anonKey:embedded.anonKey||embedded.publishableKey||saved.anonKey||'',
+    deviceName:saved.deviceName||'',
+    lastSyncAt:saved.lastSyncAt||'',
+    lastBackupDate:saved.lastBackupDate||''
+  };
+}
+function saveCloudConfig(){ localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(cloudConfig)); }
+function saveState(options={}){
+  if(!options.preserveModified) state.meta.modifiedAt=new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  renderHeader();
+  if(!options.skipCloud) scheduleCloudPush();
+}
+function esc(v){ return String(v??'').replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function money(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0); }
+function pct(v){ return `${(Number(v)||0).toFixed(1)}%`; }
+function num(v){ return Number(String(v??'').replace(',','.'))||0; }
+function round2(v){ const n=num(v); return Math.round((n+Number.EPSILON)*100)/100; }
+function today(){ return new Date().toISOString().slice(0,10); }
+function displayDate(d){ if(!d) return ''; const [y,m,day]=d.split('-'); return `${m}/${day}/${y}`; }
+function daysBetween(dateStr){ if(!dateStr) return 0; return Math.max(0,Math.floor((new Date()-new Date(dateStr+'T00:00:00'))/86400000)); }
+function nextId(type,prefix){ state.counters[type]=(state.counters[type]||0)+1; return `${prefix}-${String(state.counters[type]).padStart(3,'0')}`; }
+function categoryIcon(cat){ return ({'Handmade / Floral':'🌸',Clothing:'👕',Shoes:'👟',Accessories:'👜',Beauty:'💄',Collectibles:'🧸',Electronics:'🎧',Home:'🏠',Toys:'🪀',Other:'✨'})[cat]||'✨'; }
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+}
+function options(arr,selected=''){ return arr.map(x=>`<option value="${esc(x)}" ${x===selected?'selected':''}>${esc(x)}</option>`).join(''); }
+function photoPicker(photo,changeHandler,removeHandler){
+  return `<div class="field" style="margin-top:12px"><label>Item photo</label>
+    <div class="photo-actions">
+      <label class="photo-source-btn">📷 Take photo<input type="file" accept="image/*" capture="environment" onchange="${changeHandler}"></label>
+      <label class="photo-source-btn">🖼️ Choose from phone<input type="file" accept="image/*" onchange="${changeHandler}"></label>
+    </div>
+    ${photo?`<div class="photo-preview-row"><img class="photo-preview" src="${photo}" alt="Item photo"><div><small>Photo saved with this item.</small><button type="button" class="mini-btn danger-btn" onclick="${removeHandler}">Remove photo</button></div></div>`:`<div class="hint">Use the camera or select an existing picture from Photos, Gallery, Files, or another photo app.</div>`}
+  </div>`;
+}
+function suggestedPrice(unitCost){
+  const s=state.settings, fee=num(s.defaultFeePercent)/100, margin=num(s.targetMargin)/100;
+  const denominator=1-fee-margin;
+  if(unitCost<=0 || denominator<=0) return 0;
+  const raw=(num(unitCost)+num(s.defaultFixedFee)+num(s.defaultShipping)+num(s.defaultPackaging))/denominator;
+  return Math.max(0, Math.ceil(raw)-0.01);
+}
+function computeLine(line){
+  const item=getPurchase(line.itemId);
+  const qty=num(line.qty), price=num(line.priceEach), gross=qty*price;
+  const fees=num(line.fee), shipping=num(line.shipping), packaging=num(line.packaging);
+  const net=gross-fees-shipping-packaging;
+  const cogs=qty*num(item?.unitCost);
+  const profit=net-cogs;
+  return {gross,fees,shipping,packaging,net,cogs,profit,margin:gross?profit/gross*100:0};
+}
+function computeSale(sale){
+  const lineResults=(sale?.lines||[]).map(computeLine);
+  const itemGross=lineResults.reduce((a,x)=>a+x.gross,0);
+  const itemNet=lineResults.reduce((a,x)=>a+x.net,0);
+  const itemProfit=lineResults.reduce((a,x)=>a+x.profit,0);
+  const deliveryFee=num(sale?.deliveryFee);
+  return {
+    gross:itemGross+deliveryFee,
+    net:itemNet+deliveryFee,
+    profitBeforeExpenses:itemProfit+deliveryFee,
+    deliveryFee,
+    gasCost:num(sale?.gasCost),
+    profitAfterDelivery:itemProfit+deliveryFee-num(sale?.gasCost)
+  };
+}
+
+function activeSales(){ return state.sales.filter(s=>s.status!=='Canceled / Returned'); }
+function getPurchase(itemId){ return state.purchases.find(p=>p.itemId===itemId); }
+function inventoryCashCost(p){
+  if(p?.sourceType==='Created') return num(p.cashCost ?? p.materialsCost);
+  if(p?.sourceType==='Trade Received') return 0;
+  return num(p?.cashCost ?? p?.totalCost);
+}
+function sourceLabel(p){
+  if(p?.sourceType==='Created') return 'Made by her';
+  if(p?.sourceType==='Trade Received') return 'Received in trade';
+  return 'Purchased';
+}
+
+function soldQty(itemId,excludeSaleId=''){
+  return activeSales().filter(s=>s.saleId!==excludeSaleId).reduce((sum,s)=>sum+s.lines.filter(l=>l.itemId===itemId).reduce((a,l)=>a+num(l.qty),0),0);
+}
+function tradedQty(itemId,excludeTradeId=''){
+  return state.trades.filter(t=>t.tradeId!==excludeTradeId).reduce((sum,t)=>sum+(t.giveLines||[]).filter(l=>l.itemId===itemId).reduce((a,l)=>a+num(l.qty),0),0);
+}
+function outgoingQty(itemId){ return soldQty(itemId)+tradedQty(itemId); }
+function availableQtyFor(itemId,{excludeSaleId='',excludeTradeId=''}={}){
+  const p=getPurchase(itemId); if(!p) return 0;
+  return Math.max(0,num(p.qty)-soldQty(itemId,excludeSaleId)-tradedQty(itemId,excludeTradeId));
+}
+
+function itemStats(p){
+  const sold=soldQty(p.itemId), traded=tradedQty(p.itemId), onHand=Math.max(0,num(p.qty)-sold-traded), days=daysBetween(p.date);
+  const lineResults=[];
+  activeSales().forEach(s=>s.lines.forEach(l=>{ if(l.itemId===p.itemId) lineResults.push(computeLine(l)); }));
+  const revenue=lineResults.reduce((a,x)=>a+x.gross,0), profit=lineResults.reduce((a,x)=>a+x.profit,0);
+  let status='Active';
+  if(onHand<=0) status='Sold Out'; else if(days>=num(state.settings.slowDays)) status='Slow-Moving'; else if(days>=num(state.settings.watchDays)) status='Watch';
+  let action='Keep posting consistently.';
+  const margin=revenue?profit/revenue*100:0;
+  if(status==='Sold Out') action=margin>=num(state.settings.targetMargin)?'Great seller — consider making or sourcing it again.':'Gone from inventory — review its price or trade value next time.';
+  else if(status==='Slow-Moving') action='Try new photos, bundle it, trade it, or test a careful discount.';
+  else if(status==='Watch') action='Refresh the cover photo and caption this week.';
+  else if(sold>0) action='It is selling — keep promoting it.';
+  else if(traded>0) action='It has trade demand — compare trade value with a cash sale.';
+  return {sold,traded,onHand,days,revenue,profit,margin,status,action,value:onHand*num(p.unitCost)};
+}
+
+function totals(){
+  const saleResults=activeSales().map(computeSale);
+  const totalSales=saleResults.reduce((a,x)=>a+x.gross,0);
+  const grossProfit=saleResults.reduce((a,x)=>a+x.profitBeforeExpenses,0);
+  const expenses=state.expenses.reduce((a,x)=>a+num(x.amount),0);
+  const netProfit=grossProfit-expenses;
+  const paidCash=state.sales.filter(s=>s.status==='Paid').reduce((a,s)=>a+computeSale(s).net,0);
+  const pendingCash=state.sales.filter(s=>s.status==='Pending').reduce((a,s)=>a+computeSale(s).net,0);
+  const parentInventory=state.purchases.filter(p=>p.paidBy==='Parent Loan').reduce((a,p)=>a+inventoryCashCost(p),0);
+  const parentExpenses=state.expenses.filter(e=>e.paidBy==='Parent Loan').reduce((a,e)=>a+num(e.amount),0);
+  const advances=state.money.filter(m=>m.type==='Additional Parent Cash Advance').reduce((a,m)=>a+num(m.amount),0);
+  const manualRepayments=state.money.filter(m=>m.type==='Repayment to Parent').reduce((a,m)=>a+num(m.amount),0);
+  const loanFunded=num(state.settings.startingLoan)+parentInventory+parentExpenses+advances;
+  const businessPurchases=state.purchases.filter(p=>p.paidBy==='Business Cash').reduce((a,p)=>a+inventoryCashCost(p),0);
+  const businessExpenses=state.expenses.filter(e=>e.paidBy==='Business Cash').reduce((a,e)=>a+num(e.amount),0);
+  const ownerDeposits=state.money.filter(m=>m.type==='Owner Deposit').reduce((a,m)=>a+num(m.amount),0);
+  const withdrawals=state.money.filter(m=>m.type==='Owner Withdrawal').reduce((a,m)=>a+num(m.amount),0);
+  const availableSaleCashForLoan=Math.max(0,paidCash-businessPurchases-businessExpenses);
+  const automaticRepayment=state.settings.autoApplySalesToLoan?Math.min(Math.max(0,loanFunded-manualRepayments),availableSaleCashForLoan):0;
+  const repayments=manualRepayments+automaticRepayment;
+  const loanBalance=Math.max(0,loanFunded-repayments);
+  const businessCash=paidCash-businessPurchases-businessExpenses+advances+ownerDeposits-manualRepayments-automaticRepayment-withdrawals;
+  const freeCash=Math.max(0,businessCash-loanBalance);
+  const inventory=state.purchases.map(p=>({p,...itemStats(p)}));
+  const unitsOnHand=inventory.reduce((a,x)=>a+x.onHand,0);
+  const unitsSold=inventory.reduce((a,x)=>a+x.sold,0);
+  const unitsTraded=inventory.reduce((a,x)=>a+x.traded,0);
+  const inventoryValue=inventory.reduce((a,x)=>a+x.value,0);
+  const avgMargin=totalSales?grossProfit/totalSales*100:0;
+  const personalTradeValue=state.trades.reduce((a,t)=>a+(t.receiveLines||[]).filter(l=>l.disposition==='Keep or use — count as non-cash trade value').reduce((b,l)=>b+num(l.qty)*num(l.valueEach),0),0);
+  const tradeGivenValue=state.trades.reduce((a,t)=>a+(t.giveLines||[]).reduce((b,l)=>b+num(l.qty)*num(l.valueEach),0),0);
+  const tradeReceivedValue=state.trades.reduce((a,t)=>a+(t.receiveLines||[]).reduce((b,l)=>b+num(l.qty)*num(l.valueEach),0),0);
+  const tradeValueDifference=tradeReceivedValue-tradeGivenValue;
+  return {totalSales,grossProfit,expenses,netProfit,paidCash,pendingCash,loanFunded,manualRepayments,automaticRepayment,repayments,loanBalance,businessCash,freeCash,inventoryValue,unitsOnHand,unitsSold,unitsTraded,avgMargin,inventory,personalTradeValue,tradeGivenValue,tradeReceivedValue,tradeValueDifference};
+}
+
+function renderHeader(){
+  document.getElementById('headerBusinessName').textContent=state.settings.businessName||'Reseller Pocket';
+  document.getElementById('headerSubtitle').textContent=state.settings.daughterName?`${state.settings.daughterName}'s business`:'Simple business tracker';
+  document.title=`${state.settings.businessName||'Reseller Pocket'} — Business App`;
+}
+function renderActiveScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.screen===id));
+  if(id==='homeScreen') renderHome();
+  if(id==='inventoryScreen') renderInventory();
+  if(id==='progressScreen') renderProgress();
+  if(id==='parentScreen') renderParent();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showScreen(id,options={}){
+  const push=options.push!==false;
+  if(push&&id!==currentScreen){
+    try{ history.pushState({appScreen:id},'',location.href); }catch(e){}
+  }
+  currentScreen=id;
+  renderActiveScreen(id);
+}
+function appBack(){
+  if(document.getElementById('cloudModal')?.classList.contains('show')) return closeCloudModal();
+  if(currentScreen==='homeScreen') return renderActiveScreen('homeScreen');
+  try{ history.back(); }catch(e){ showScreen('homeScreen',{push:false}); }
+}
+function initNavigationHistory(){
+  try{
+    history.replaceState({appRoot:true,appScreen:'homeScreen'},'',location.href);
+    history.pushState({appScreen:'homeScreen'},'',location.href);
+  }catch(e){}
+  window.addEventListener('popstate',event=>{
+    document.getElementById('cloudModal')?.classList.remove('show');
+    const target=event.state?.appScreen||'homeScreen';
+    if(event.state?.appRoot){
+      currentScreen='homeScreen'; renderActiveScreen('homeScreen');
+      try{ history.pushState({appScreen:'homeScreen'},'',location.href); }catch(e){}
+      return;
+    }
+    currentScreen=target; renderActiveScreen(target);
+  });
+}
+
+
+function coachMessage(t){
+  if(!state.sales.length&&!state.trades.length) return 'Your first goal: add purchased or handmade inventory, then record a sale or trade. Every small step counts!';
+  if(t.loanBalance>0) return `Great progress! Cash sales can keep paying down the parent loan. ${money(t.loanBalance)} remains. Trade value is tracked separately and never repays the loan.`;
+  if(t.avgMargin<num(state.settings.lowMargin)&&state.sales.length) return 'Your average cash-sale margin is low. Try slightly higher prices or lower material and sourcing costs.';
+  if(t.inventory.some(x=>x.status==='Slow-Moving')) return 'A few items need fresh attention. New photos, bundles, or a fair trade can help them move.';
+  if(t.netProfit>0) return 'The startup loan is covered and the business is profitable. Reinvest carefully in the items that sell or trade best!';
+  return 'Keep recording every sale, trade, material cost, and hour. Accurate tracking is a business superpower.';
+}
+
+function backupDue(){
+  const d=state.settings.lastBackup;
+  if(!d) return true;
+  return daysBetween(d)>=7;
+}
+function renderHome(){
+  const t=totals(), name=state.settings.daughterName||'Boss';
+  const backup=(!cloudUser&&backupDue())?`<div class="coach-card backup-warning"><h3>🔐 Parent backup reminder</h3><p>Cloud sync is not connected. A parent should connect it or download a backup.</p></div>`:'';
+  document.getElementById('homeScreen').innerHTML=`
+    <div class="hero">
+      <small>WELCOME BACK, ${esc(name).toUpperCase()} ✨</small>
+      <h2>Let’s grow your business.</h2>
+      <p>Record a sale, something she made, or a trade. The app handles the math.</p>
+      <div class="hero-stat">
+        <div><strong>${money(t.netProfit)}</strong><span>Profit after tracked costs</span></div>
+        <div><strong>${t.unitsOnHand}</strong><span>Items ready to sell or trade</span></div>
+      </div>
+    </div>
+    <div class="section-title"><h2>What happened?</h2><span>Tap one</span></div>
+    <div class="action-grid">
+      <button class="action-card sell" onclick="openSaleScreen()"><div class="icon">💰</div><div><strong>I made a sale</strong><small>Cash sale, pickup, shipping, or delivery</small></div></button>
+      <button class="action-card buy" onclick="openPurchaseScreen()"><div class="icon">🛍️</div><div><strong>I bought inventory</strong><small>Single items or a bulk purchase</small></div></button>
+      <button class="action-card create" onclick="openCreatedScreen()"><div class="icon">🌸</div><div><strong>I made something</strong><small>Track materials, time, and value</small></div></button>
+      <button class="action-card trade" onclick="openTradeScreen()"><div class="icon">🔄</div><div><strong>I made a trade</strong><small>What she gave and received</small></div></button>
+      <button class="action-card inventory" onclick="showScreen('inventoryScreen')"><div class="icon">📦</div><div><strong>See my inventory</strong><small>Purchased, handmade, and trade items</small></div></button>
+      <button class="action-card expense" onclick="openExpenseScreen()"><div class="icon">🧾</div><div><strong>I had an expense</strong><small>Packaging, supplies, gas, and more</small></div></button>
+    </div>
+    ${t.personalTradeValue>0?`<div class="coach-card trade-value-card"><h3>🔄 Non-cash trade value</h3><p>She has received <b>${money(t.personalTradeValue)}</b> in items she kept or used. This is value, not cash, and does not repay the parent loan.</p></div>`:''}
+    <div class="coach-card"><h3>🌟 Business Coach</h3><p>${esc(coachMessage(t))}</p></div>
+    ${backup}
+  `;
+}
+
+function openPurchaseScreen(){
+  if(!purchaseDraft.length) purchaseDraft=[newPurchaseLine()];
+  if(!purchaseMeta.date) purchaseMeta.date=today();
+  renderPurchaseScreen(); showScreen('purchaseScreen');
+}
+function newPurchaseLine(){ return {name:'',category:'Clothing',variant:'',qty:1,totalCost:'',photo:'',notes:''}; }
+function renderPurchaseScreen(){
+  const editing=Boolean(editingPurchaseId);
+  document.getElementById('purchaseScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="${editing?'cancelEntryEdit()':'appBack()'}">←</button><div class="screen-heading"><h2>${editing?'Edit inventory purchase':'Add inventory'}</h2><p>${editing?'Correct the saved items and the app will recalculate every total.':'One shopping trip can include several different items.'}</p></div></div>
+    <div class="form-card">
+      <h3>Purchase details</h3>
+      <div class="two-col">
+        <div class="field"><label>Date</label><input id="purchaseDate" type="date" value="${esc(purchaseMeta.date||today())}" onchange="purchaseMeta.date=this.value"></div>
+        <div class="field"><label>Who paid?</label><select id="purchasePaidBy" onchange="purchaseMeta.paidBy=this.value">${options(PAID_BY,purchaseMeta.paidBy||'Parent Loan')}</select></div>
+      </div>
+      <div class="field"><label>Seller or source <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input id="purchaseSource" value="${esc(purchaseMeta.source)}" oninput="purchaseMeta.source=this.value" placeholder="Person, thrift store, supplier..."></div>
+      <div class="hint">Choose <b>Parent Loan</b> when a parent paid and should be repaid.</div>
+    </div>
+    <div class="section-title"><h3>Items in this purchase</h3><span>${purchaseDraft.length} item type${purchaseDraft.length===1?'':'s'}</span></div>
+    <div id="purchaseLines"></div>
+    <button class="add-line-btn" onclick="addPurchaseLine()">＋ Add another item type</button>
+    <button class="primary-btn" onclick="savePurchase()">${editing?'Save Purchase Changes ✓':'Save Inventory Purchase 🛍️'}</button>
+    ${editing?'<button class="secondary-btn" onclick="cancelEntryEdit()">Cancel editing</button>':''}
+  `;
+  renderPurchaseLines();
+}
+function renderPurchaseLines(){
+  const box=document.getElementById('purchaseLines'); if(!box) return;
+  box.innerHTML=purchaseDraft.map((l,i)=>{
+    const unit=num(l.qty)?num(l.totalCost)/num(l.qty):0;
+    const suggestion=suggestedPrice(unit);
+    return `<div class="line-card">
+      <div class="line-card-head"><strong>Item type ${i+1}</strong>${purchaseDraft.length>1?`<button class="mini-btn danger-btn" onclick="removePurchaseLine(${i})">Remove</button>`:''}</div>
+      <div class="field"><label>Item name</label><input value="${esc(l.name)}" oninput="updatePurchaseLine(${i},'name',this.value)" placeholder="Example: Pink graphic tee"></div>
+      <div class="two-col">
+        <div class="field"><label>Category</label><select onchange="updatePurchaseLine(${i},'category',this.value)">${options(CATEGORIES,l.category)}</select></div>
+        <div class="field"><label>Size / style</label><input value="${esc(l.variant)}" oninput="updatePurchaseLine(${i},'variant',this.value)" placeholder="Medium, blue..."></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Quantity</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" oninput="updatePurchaseLine(${i},'qty',this.value)"></div>
+        <div class="field"><label>Total cost for these</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.totalCost)}" oninput="updatePurchaseLine(${i},'totalCost',this.value)" placeholder="0.00"></div>
+      </div>
+      <div class="price-tip" id="purchase-tip-${i}">Cost per item: ${money(unit)} · Suggested starting price: ${money(suggestion)}</div>
+      <details><summary>Optional photo and notes</summary>
+        ${photoPicker(l.photo,`handlePhoto(event,${i})`,`clearPurchasePhoto(${i})`)}
+        <div class="field"><label>Notes</label><textarea oninput="updatePurchaseLine(${i},'notes',this.value)" placeholder="Condition, brand, flaws...">${esc(l.notes)}</textarea></div>
+      </details>
+    </div>`;
+  }).join('');
+}
+function updatePurchaseLine(i,field,value){
+  purchaseDraft[i][field]=value;
+  if(field==='qty'||field==='totalCost') updatePurchaseLineDisplay(i);
+}
+function updatePurchaseLineDisplay(i){
+  const l=purchaseDraft[i], tip=document.getElementById(`purchase-tip-${i}`); if(!l||!tip) return;
+  const unit=num(l.qty)?num(l.totalCost)/num(l.qty):0;
+  tip.textContent=`Cost per item: ${money(unit)} · Suggested starting price: ${money(suggestedPrice(unit))}`;
+}
+function addPurchaseLine(){ purchaseDraft.push(newPurchaseLine()); renderPurchaseScreen(); }
+function removePurchaseLine(i){
+  const l=purchaseDraft[i];
+  if(l?.itemId&&outgoingQty(l.itemId)>0) return toast('This item has a sale or trade. Edit it, but it cannot be removed from the original purchase.');
+  purchaseDraft.splice(i,1); renderPurchaseScreen();
+}
+function clearPurchasePhoto(i){ if(purchaseDraft[i]){purchaseDraft[i].photo='';renderPurchaseLines();} }
+async function handlePhoto(event,i){
+  const file=event.target.files?.[0]; if(!file) return;
+  try { purchaseDraft[i].photo=await compressImage(file); event.target.value=''; renderPurchaseLines(); } catch(e){ toast('Photo could not be added. Try a JPG, PNG, or screenshot.'); }
+}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader(); reader.onerror=reject;
+    reader.onload=()=>{
+      const img=new Image(); img.onerror=reject;
+      img.onload=()=>{
+        const max=320, scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement('canvas'); canvas.width=Math.round(img.width*scale); canvas.height=Math.round(img.height*scale);
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',.62));
+      }; img.src=reader.result;
+    }; reader.readAsDataURL(file);
+  });
+}
+function savePurchase(){
+  purchaseMeta.date=document.getElementById('purchaseDate').value||today();
+  purchaseMeta.paidBy=document.getElementById('purchasePaidBy').value;
+  purchaseMeta.source=document.getElementById('purchaseSource').value;
+  const date=purchaseMeta.date, paidBy=purchaseMeta.paidBy, source=purchaseMeta.source.trim();
+  const original=editingPurchaseId?state.purchases.filter(p=>p.purchaseId===editingPurchaseId):[];
+  for(const l of purchaseDraft){
+    if(!l.name.trim()) return toast('Give every item a name.');
+    if(num(l.qty)<=0 || !Number.isInteger(num(l.qty))) return toast('Quantity must be a whole number.');
+    if(num(l.totalCost)<0) return toast('Check the purchase cost.');
+    if(l.itemId&&num(l.qty)<outgoingQty(l.itemId)) return toast(`${l.name} already has ${outgoingQty(l.itemId)} sold or traded. Its quantity cannot be reduced below that.`);
+  }
+  const retained=new Set(purchaseDraft.map(l=>l.itemId).filter(Boolean));
+  const blockedRemoval=original.find(p=>!retained.has(p.itemId)&&outgoingQty(p.itemId)>0);
+  if(blockedRemoval) return toast(`${blockedRemoval.name} has activity and cannot be removed from this purchase.`);
+  const purchaseId=editingPurchaseId||nextId('purchase','P');
+  const records=purchaseDraft.map(l=>{
+    const qty=num(l.qty), totalCost=round2(l.totalCost), existing=original.find(p=>p.itemId===l.itemId);
+    return {id:existing?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,purchaseId,itemId:existing?.itemId||nextId('item','ITEM'),date,name:l.name.trim(),category:l.category,variant:l.variant.trim(),qty,totalCost,cashCost:totalCost,unitCost:round2(qty?totalCost/qty:0),paidBy,source,sourceType:'Purchased',estimatedValueEach:round2(num(l.estimatedValueEach)||suggestedPrice(qty?totalCost/qty:0)),notes:l.notes.trim(),photo:l.photo||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  });
+  if(editingPurchaseId) state.purchases=state.purchases.filter(p=>p.purchaseId!==editingPurchaseId);
+  state.purchases.push(...records); saveState();
+  const count=purchaseDraft.reduce((a,l)=>a+num(l.qty),0), total=purchaseDraft.reduce((a,l)=>a+num(l.totalCost),0), wasEditing=Boolean(editingPurchaseId);
+  purchaseDraft=[]; purchaseMeta={date:'',paidBy:'Parent Loan',source:''}; editingPurchaseId='';
+  toast(wasEditing?`Purchase updated. Inventory, profit, cash, and loan totals were recalculated.`:`Added ${count} item${count===1?'':'s'} for ${money(total)}. Nice sourcing!`);
+  if(wasEditing){currentParentTab='manage';renderParent();showScreen('parentScreen');}else showScreen('homeScreen');
+}
+
+
+function openCreatedScreen(){
+  if(!createdDraft.length) createdDraft=[newCreatedLine()];
+  if(!createdMeta.date) createdMeta.date=today();
+  renderCreatedScreen(); showScreen('createdScreen');
+}
+function newCreatedLine(){ return {name:'',category:'Handmade / Floral',variant:'',qty:1,materialsCost:'',laborHours:'',laborRate:num(state.settings.defaultLaborRate)||12,estimatedValueEach:'',photo:'',notes:''}; }
+function renderCreatedScreen(){
+  const editing=Boolean(editingPurchaseId);
+  document.getElementById('createdScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="${editing?'cancelEntryEdit()':'appBack()'}">←</button><div class="screen-heading"><h2>${editing?'Edit handmade inventory':'Add something she made'}</h2><p>${editing?'Correct materials, time, value, photos, or quantities.':'Track cash materials, her time, and the item\'s estimated value.'}</p></div></div>
+    <div class="form-card"><h3>Creation details</h3><div class="two-col"><div class="field"><label>Date finished</label><input id="createdDate" type="date" value="${esc(createdMeta.date||today())}" onchange="createdMeta.date=this.value"></div><div class="field"><label>Who paid for materials?</label><select id="createdPaidBy" onchange="createdMeta.paidBy=this.value">${options(PAID_BY,createdMeta.paidBy||'Parent Loan')}</select></div></div><div class="hint">Only the cash material cost can add to the parent loan. Her time is valuable, but it is not cash owed to a parent.</div></div>
+    <div class="section-title"><h3>Things she made</h3><span>${createdDraft.length} item type${createdDraft.length===1?'':'s'}</span></div>
+    <div id="createdLines"></div>
+    <button class="add-line-btn" onclick="addCreatedLine()">＋ Add another handmade item</button>
+    <button class="primary-btn" onclick="saveCreatedInventory()">${editing?'Save Handmade Changes ✓':'Save Handmade Inventory 🌸'}</button>
+    ${editing?'<button class="secondary-btn" onclick="cancelEntryEdit()">Cancel editing</button>':''}`;
+  renderCreatedLines();
+}
+function renderCreatedLines(){
+  const box=document.getElementById('createdLines'); if(!box) return;
+  box.innerHTML=createdDraft.map((l,i)=>{
+    const qty=Math.max(1,num(l.qty)), materials=num(l.materialsCost), laborValue=num(l.laborHours)*num(l.laborRate), economic=materials+laborValue, unit=economic/qty;
+    const estimated=num(l.estimatedValueEach)||suggestedPrice(unit);
+    return `<div class="line-card"><div class="line-card-head"><strong>Handmade item ${i+1}</strong>${createdDraft.length>1?`<button class="mini-btn danger-btn" onclick="removeCreatedLine(${i})">Remove</button>`:''}</div>
+      <div class="field"><label>Item name</label><input value="${esc(l.name)}" oninput="updateCreatedLine(${i},'name',this.value)" placeholder="Example: Pink ribbon rose bouquet"></div>
+      <div class="two-col"><div class="field"><label>Category</label><select onchange="updateCreatedLine(${i},'category',this.value)">${options(CATEGORIES,l.category)}</select></div><div class="field"><label>Style / size</label><input value="${esc(l.variant)}" oninput="updateCreatedLine(${i},'variant',this.value)" placeholder="12 roses, blue wrap..."></div></div>
+      <div class="two-col"><div class="field"><label>Quantity made</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" oninput="updateCreatedLine(${i},'qty',this.value)"></div><div class="field"><label>Total material cost</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.materialsCost)}" oninput="updateCreatedLine(${i},'materialsCost',this.value)" placeholder="Ribbon, wire, wrapping..."></div></div>
+      <div class="two-col"><div class="field"><label>Total hours spent</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.laborHours)}" oninput="updateCreatedLine(${i},'laborHours',this.value)" placeholder="1.5"></div><div class="field"><label>Value of her time / hour</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.laborRate)}" oninput="updateCreatedLine(${i},'laborRate',this.value)"></div></div>
+      <div class="field"><label>Estimated sale or trade value — each</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.estimatedValueEach)}" oninput="updateCreatedLine(${i},'estimatedValueEach',this.value)" placeholder="What one finished item is worth"></div>
+      <div class="price-tip" id="created-tip-${i}">Cash materials: ${money(materials)} · Time value: ${money(laborValue)} · Tracked cost each: ${money(unit)} · Estimated value each: ${money(estimated)}</div>
+      <details><summary>Optional photo and notes</summary>${photoPicker(l.photo,`handleCreatedPhoto(event,${i})`,`clearCreatedPhoto(${i})`)}<div class="field"><label>Notes</label><textarea oninput="updateCreatedLine(${i},'notes',this.value)" placeholder="Materials, custom details, pattern...">${esc(l.notes)}</textarea></div></details>
+    </div>`;
+  }).join('');
+}
+function updateCreatedLine(i,field,value){
+  createdDraft[i][field]=value;
+  if(['qty','materialsCost','laborHours','laborRate','estimatedValueEach'].includes(field)) updateCreatedLineDisplay(i);
+}
+function updateCreatedLineDisplay(i){
+  const l=createdDraft[i], tip=document.getElementById(`created-tip-${i}`); if(!l||!tip) return;
+  const qty=Math.max(1,num(l.qty)), materials=num(l.materialsCost), laborValue=num(l.laborHours)*num(l.laborRate), unit=(materials+laborValue)/qty;
+  const estimated=num(l.estimatedValueEach)||suggestedPrice(unit);
+  tip.textContent=`Cash materials: ${money(materials)} · Time value: ${money(laborValue)} · Tracked cost each: ${money(unit)} · Estimated value each: ${money(estimated)}`;
+}
+function addCreatedLine(){ createdDraft.push(newCreatedLine()); renderCreatedScreen(); }
+function removeCreatedLine(i){ const l=createdDraft[i]; if(l?.itemId&&outgoingQty(l.itemId)>0)return toast('This item has a sale or trade and cannot be removed.'); createdDraft.splice(i,1); renderCreatedScreen(); }
+function clearCreatedPhoto(i){ if(createdDraft[i]){createdDraft[i].photo='';renderCreatedLines();} }
+async function handleCreatedPhoto(event,i){ const file=event.target.files?.[0]; if(!file) return; try{ createdDraft[i].photo=await compressImage(file); event.target.value=''; renderCreatedLines(); }catch(e){ toast('Photo could not be added. Try a JPG, PNG, or screenshot.'); } }
+function saveCreatedInventory(){
+  createdMeta.date=document.getElementById('createdDate').value||today(); createdMeta.paidBy=document.getElementById('createdPaidBy').value;
+  const original=editingPurchaseId?state.purchases.filter(p=>p.purchaseId===editingPurchaseId):[];
+  for(const l of createdDraft){
+    if(!l.name.trim()) return toast('Give every handmade item a name.');
+    if(num(l.qty)<=0||!Number.isInteger(num(l.qty))) return toast('Quantity must be a whole number.');
+    if(num(l.materialsCost)<0||num(l.laborHours)<0||num(l.laborRate)<0||num(l.estimatedValueEach)<0) return toast('Check the cost, time, and value fields.');
+    if(l.itemId&&num(l.qty)<outgoingQty(l.itemId)) return toast(`${l.name} already has ${outgoingQty(l.itemId)} sold or traded. Its quantity cannot be reduced below that.`);
+  }
+  const retained=new Set(createdDraft.map(l=>l.itemId).filter(Boolean));
+  const blockedRemoval=original.find(p=>!retained.has(p.itemId)&&outgoingQty(p.itemId)>0);
+  if(blockedRemoval) return toast(`${blockedRemoval.name} has activity and cannot be removed.`);
+  const purchaseId=editingPurchaseId||nextId('purchase','MAKE');
+  let count=0,cashMaterials=0,time=0;
+  const records=createdDraft.map(l=>{
+    const existing=original.find(p=>p.itemId===l.itemId),qty=num(l.qty),materials=round2(l.materialsCost),laborHours=num(l.laborHours),laborRate=round2(l.laborRate),laborValue=round2(laborHours*laborRate),totalCost=round2(materials+laborValue),unitCost=round2(totalCost/qty),estimatedValueEach=round2(num(l.estimatedValueEach)||suggestedPrice(unitCost));
+    count+=qty;cashMaterials+=materials;time+=laborHours;
+    return {id:existing?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,purchaseId,itemId:existing?.itemId||nextId('item','ITEM'),date:createdMeta.date,name:l.name.trim(),category:l.category,variant:l.variant.trim(),qty,totalCost,cashCost:materials,materialsCost:materials,laborHours,laborRate,laborValue,unitCost,estimatedValueEach,paidBy:createdMeta.paidBy,source:'Made by her',sourceType:'Created',notes:l.notes.trim(),photo:l.photo||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  });
+  if(editingPurchaseId) state.purchases=state.purchases.filter(p=>p.purchaseId!==editingPurchaseId);
+  state.purchases.push(...records);
+  const wasEditing=Boolean(editingPurchaseId); createdDraft=[]; createdMeta={date:'',paidBy:'Parent Loan'}; editingPurchaseId=''; saveState();
+  toast(wasEditing?'Handmade entry updated. Inventory, labor value, profit, cash, and loan totals were recalculated.':`Added ${count} handmade item${count===1?'':'s'} · ${money(cashMaterials)} materials · ${time.toFixed(1)} hours tracked.`);
+  if(wasEditing){currentParentTab='manage';renderParent();showScreen('parentScreen');}else showScreen('homeScreen');
+}
+
+function availableInventory({excludeSaleId='',excludeTradeId=''}={}){
+  return state.purchases.map(p=>{const s=itemStats(p); return {p,s:{...s,onHand:availableQtyFor(p.itemId,{excludeSaleId,excludeTradeId})}};}).filter(x=>x.s.onHand>0);
+}
+
+function openTradeScreen(){
+  if(!availableInventory({excludeTradeId:editingTradeId}).length){ toast('Add an item before recording a trade.'); showScreen('homeScreen'); return; }
+  if(!tradeGiveDraft.length) tradeGiveDraft=[newTradeGiveLine()];
+  if(!tradeReceiveDraft.length) tradeReceiveDraft=[newTradeReceiveLine()];
+  if(!tradeMeta.date) tradeMeta.date=today();
+  renderTradeScreen(); showScreen('tradeScreen');
+}
+function newTradeGiveLine(){
+  const first=availableInventory({excludeSaleId:editingSaleId})[0]?.p;
+  return {itemId:first?.itemId||'',qty:1,valueEach:round2(num(first?.estimatedValueEach)||suggestedPrice(num(first?.unitCost)))||''};
+}
+function newTradeReceiveLine(){ return {name:'',category:'Other',variant:'',qty:1,valueEach:'',disposition:'Add to inventory for resale',photo:'',notes:''}; }
+function tradeGivenTotal(){ return tradeGiveDraft.reduce((a,l)=>a+num(l.qty)*num(l.valueEach),0); }
+function tradeReceivedTotal(){ return tradeReceiveDraft.reduce((a,l)=>a+num(l.qty)*num(l.valueEach),0); }
+function renderTradeScreen(){
+  const given=tradeGivenTotal(),received=tradeReceivedTotal(),editing=Boolean(editingTradeId);
+  document.getElementById('tradeScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="${editing?'cancelEntryEdit()':'appBack()'}">←</button><div class="screen-heading"><h2>${editing?'Edit trade':'Record a trade'}</h2><p>${editing?'Correct the trade while preserving any inventory already used.':'Track what she gave, what she received, and where the new value goes.'}</p></div></div>
+    <div class="form-card"><div class="two-col"><div class="field"><label>Trade date</label><input id="tradeDate" type="date" value="${esc(tradeMeta.date||today())}" onchange="tradeMeta.date=this.value"></div><div class="field"><label>Traded with <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input id="tradePartner" value="${esc(tradeMeta.partner)}" oninput="tradeMeta.partner=this.value" placeholder="Name or business"></div></div></div>
+    <div class="section-title"><h3>What she gave</h3><span>${tradeGiveDraft.length} item line${tradeGiveDraft.length===1?'':'s'}</span></div><div id="tradeGiveLines"></div><button class="add-line-btn" onclick="addTradeGiveLine()">＋ Add another item she gave</button>
+    <div class="section-title"><h3>What she received</h3><span>${tradeReceiveDraft.length} item type${tradeReceiveDraft.length===1?'':'s'}</span></div><div id="tradeReceiveLines"></div><button class="add-line-btn" onclick="addTradeReceiveLine()">＋ Add another item received</button>
+    <div class="form-card"><div class="value-summary"><div><strong id="trade-given-total">${money(given)}</strong><span>VALUE SHE GAVE</span></div><div><strong id="trade-received-total">${money(received)}</strong><span>VALUE SHE RECEIVED</span></div></div><div class="price-tip" id="trade-difference-tip">Trade difference: ${money(received-given)}. Trade value is never used to repay the parent loan.</div><div class="field" style="margin-top:14px"><label>Trade notes <span style="font-weight:500;color:var(--muted)">(optional)</span></label><textarea id="tradeNotes" oninput="tradeMeta.notes=this.value" placeholder="Why the trade was helpful, condition, pickup details...">${esc(tradeMeta.notes)}</textarea></div></div>
+    <button class="primary-btn" onclick="saveTrade()">${editing?'Save Trade Changes ✓':'Save Trade 🔄'}</button>
+    ${editing?'<button class="secondary-btn" onclick="cancelEntryEdit()">Cancel editing</button>':''}`;
+  renderTradeGiveLines();renderTradeReceiveLines();
+}
+function tradeItemOptions(selected){ return availableInventory({excludeTradeId:editingTradeId}).map(({p,s})=>`<option value="${esc(p.itemId)}" ${p.itemId===selected?'selected':''}>${esc(p.name)}${p.variant?' — '+esc(p.variant):''} (${s.onHand} available)</option>`).join(''); }
+function renderTradeGiveLines(){
+  const box=document.getElementById('tradeGiveLines'); if(!box) return;
+  box.innerHTML=tradeGiveDraft.map((l,i)=>{const p=getPurchase(l.itemId),s=p?{...itemStats(p),onHand:availableQtyFor(p.itemId,{excludeTradeId:editingTradeId})}:null;return `<div class="line-card"><div class="line-card-head"><strong>Given item ${i+1}</strong>${tradeGiveDraft.length>1?`<button class="mini-btn danger-btn" onclick="removeTradeGiveLine(${i})">Remove</button>`:''}</div><div class="field"><label>Choose inventory item</label><select onchange="changeTradeGiveItem(${i},this.value)">${tradeItemOptions(l.itemId)}</select></div>${p?`<div class="hint">${s.onHand} available · ${sourceLabel(p)} · Tracked cost ${money(p.unitCost)} each</div>`:''}<div class="two-col" style="margin-top:12px"><div class="field"><label>Quantity given</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" oninput="updateTradeGiveLine(${i},'qty',this.value)"></div><div class="field"><label>Trade value each</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.valueEach)}" oninput="updateTradeGiveLine(${i},'valueEach',this.value)"></div></div><div class="price-tip" id="trade-give-tip-${i}">Value given on this line: ${money(num(l.qty)*num(l.valueEach))}</div></div>`;}).join('');
+}
+function renderTradeReceiveLines(){
+  const box=document.getElementById('tradeReceiveLines'); if(!box) return;
+  box.innerHTML=tradeReceiveDraft.map((l,i)=>`<div class="line-card"><div class="line-card-head"><strong>Received item ${i+1}</strong>${tradeReceiveDraft.length>1?`<button class="mini-btn danger-btn" onclick="removeTradeReceiveLine(${i})">Remove</button>`:''}</div><div class="field"><label>Item received</label><input value="${esc(l.name)}" oninput="updateTradeReceiveLine(${i},'name',this.value)" placeholder="Example: Vintage bag"></div><div class="two-col"><div class="field"><label>Quantity received</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" oninput="updateTradeReceiveLine(${i},'qty',this.value)"></div><div class="field"><label>Value each</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.valueEach)}" oninput="updateTradeReceiveLine(${i},'valueEach',this.value)"></div></div><div class="field"><label>What happens to it?</label><select onchange="updateTradeReceiveDisposition(${i},this.value)">${options(RECEIVED_DISPOSITIONS,l.disposition)}</select></div>${l.disposition==='Add to inventory for resale'?`<div class="two-col"><div class="field"><label>Category</label><select onchange="updateTradeReceiveLine(${i},'category',this.value)">${options(CATEGORIES,l.category)}</select></div><div class="field"><label>Size / style</label><input value="${esc(l.variant)}" oninput="updateTradeReceiveLine(${i},'variant',this.value)" placeholder="Optional"></div></div>`:`<div class="coach-card trade-value-card" style="margin-top:8px"><h3>Non-cash value</h3><p id="trade-receive-tip-${i}">${money(num(l.qty)*num(l.valueEach))} will be added to the running trade-value total—not business cash and not parent-loan repayment.</p></div>`}${photoPicker(l.photo||'',`handleTradeReceivePhoto(event,${i})`,`clearTradeReceivePhoto(${i})`)}<div class="field"><label>Notes <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input value="${esc(l.notes)}" oninput="updateTradeReceiveLine(${i},'notes',this.value)" placeholder="Condition, who will use it..."></div></div>`).join('');
+}
+function updateTradeGiveLine(i,field,value){
+  tradeGiveDraft[i][field]=value;
+  updateTradeDisplay(i,'give');
+}
+function updateTradeReceiveLine(i,field,value,rerender=false){
+  tradeReceiveDraft[i][field]=value;
+  if(rerender) renderTradeScreen(); else updateTradeDisplay(i,'receive');
+}
+function updateTradeReceiveDisposition(i,value){
+  const l=tradeReceiveDraft[i];
+  if(l?._itemId&&outgoingQty(l._itemId)>0&&value!=='Add to inventory for resale') return toast('This received item has already been sold or traded, so it must remain resale inventory.');
+  l.disposition=value; renderTradeScreen();
+}
+function clearTradeReceivePhoto(i){ if(tradeReceiveDraft[i]){tradeReceiveDraft[i].photo='';renderTradeReceiveLines();} }
+async function handleTradeReceivePhoto(event,i){ const file=event.target.files?.[0];if(!file)return;try{tradeReceiveDraft[i].photo=await compressImage(file);event.target.value='';renderTradeReceiveLines();}catch(e){toast('Photo could not be added. Try a JPG, PNG, or screenshot.');} }
+function updateTradeDisplay(i,type){
+  if(type==='give'){
+    const l=tradeGiveDraft[i], tip=document.getElementById(`trade-give-tip-${i}`);
+    if(l&&tip) tip.textContent=`Value given on this line: ${money(num(l.qty)*num(l.valueEach))}`;
+  } else {
+    const l=tradeReceiveDraft[i], tip=document.getElementById(`trade-receive-tip-${i}`);
+    if(l&&tip) tip.textContent=`${money(num(l.qty)*num(l.valueEach))} will be added to the running trade-value total—not business cash and not parent-loan repayment.`;
+  }
+  const given=tradeGivenTotal(), received=tradeReceivedTotal();
+  const ge=document.getElementById('trade-given-total'), re=document.getElementById('trade-received-total'), de=document.getElementById('trade-difference-tip');
+  if(ge) ge.textContent=money(given); if(re) re.textContent=money(received);
+  if(de) de.textContent=`Trade difference: ${money(received-given)}. Trade value is never used to repay the parent loan.`;
+}
+function changeTradeGiveItem(i,itemId){ if(tradeGiveDraft.some((l,x)=>x!==i&&l.itemId===itemId)){toast('That item is already in this trade.');return renderTradeGiveLines();} const p=getPurchase(itemId); tradeGiveDraft[i]={itemId,qty:1,valueEach:round2(num(p?.estimatedValueEach)||suggestedPrice(num(p?.unitCost)))||''}; renderTradeScreen(); }
+function addTradeGiveLine(){ const used=new Set(tradeGiveDraft.map(l=>l.itemId)),next=availableInventory({excludeTradeId:editingTradeId}).find(x=>!used.has(x.p.itemId)); if(!next)return toast('Every available item is already included.'); tradeGiveDraft.push({itemId:next.p.itemId,qty:1,valueEach:round2(num(next.p.estimatedValueEach)||suggestedPrice(num(next.p.unitCost)))||''}); renderTradeScreen(); }
+function removeTradeGiveLine(i){ tradeGiveDraft.splice(i,1); renderTradeScreen(); }
+function addTradeReceiveLine(){ tradeReceiveDraft.push(newTradeReceiveLine()); renderTradeScreen(); }
+function removeTradeReceiveLine(i){ const l=tradeReceiveDraft[i];if(l?._itemId&&outgoingQty(l._itemId)>0)return toast('This received item has already been sold or traded and cannot be removed.');tradeReceiveDraft.splice(i,1);renderTradeScreen(); }
+function saveTrade(){
+  tradeMeta.date=document.getElementById('tradeDate').value||today();tradeMeta.partner=document.getElementById('tradePartner').value;tradeMeta.notes=document.getElementById('tradeNotes').value;
+  const originalTrade=editingTradeId?state.trades.find(t=>t.tradeId===editingTradeId):null;
+  const originalReceived=editingTradeId?state.purchases.filter(p=>p.tradeId===editingTradeId):[];
+  const qtyByItem={};
+  for(const l of tradeGiveDraft){const p=getPurchase(l.itemId),available=availableQtyFor(l.itemId,{excludeTradeId:editingTradeId});if(!p)return toast('Choose a valid item she gave.');if(num(l.qty)<=0||!Number.isInteger(num(l.qty)))return toast('Given quantities must be whole numbers.');qtyByItem[l.itemId]=(qtyByItem[l.itemId]||0)+num(l.qty);if(qtyByItem[l.itemId]>available)return toast(`Only ${available} of ${p.name} are available for this trade.`);if(num(l.valueEach)<0)return toast('Check the value of items she gave.');}
+  for(const l of tradeReceiveDraft){if(!l.name.trim())return toast('Name every item she received.');if(num(l.qty)<=0||!Number.isInteger(num(l.qty)))return toast('Received quantities must be whole numbers.');if(num(l.valueEach)<0)return toast('Check the value received.');if(l._itemId&&num(l.qty)<outgoingQty(l._itemId))return toast(`${l.name} already has ${outgoingQty(l._itemId)} sold or traded. Its quantity cannot be reduced below that.`);}
+  const retainedReceived=new Set(tradeReceiveDraft.filter(l=>l.disposition==='Add to inventory for resale').map(l=>l._itemId).filter(Boolean));
+  const blocked=originalReceived.find(p=>!retainedReceived.has(p.itemId)&&outgoingQty(p.itemId)>0);if(blocked)return toast(`${blocked.name} has later activity and cannot be removed from the trade.`);
+  const tradeId=editingTradeId||nextId('trade','T');
+  const receiveLines=tradeReceiveDraft.map(l=>({...l,qty:num(l.qty),valueEach:round2(l.valueEach),inventoryItemId:l.disposition==='Add to inventory for resale'?(l._itemId||l.inventoryItemId||''):''}));
+  const trade={id:originalTrade?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,tradeId,date:tradeMeta.date,partner:tradeMeta.partner.trim(),notes:tradeMeta.notes.trim(),giveLines:tradeGiveDraft.map(l=>({...l,qty:num(l.qty),valueEach:round2(l.valueEach)})),receiveLines,createdAt:originalTrade?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  if(editingTradeId){state.trades=state.trades.filter(t=>t.tradeId!==editingTradeId);state.purchases=state.purchases.filter(p=>p.tradeId!==editingTradeId);}
+  state.trades.push(trade);
+  receiveLines.filter(l=>l.disposition==='Add to inventory for resale').forEach((l,index)=>{const existing=originalReceived.find(p=>p.itemId===(l.inventoryItemId||l._itemId))||originalReceived[index],total=round2(num(l.qty)*num(l.valueEach)),itemId=existing?.itemId||l.inventoryItemId||nextId('item','ITEM');l.inventoryItemId=itemId;state.purchases.push({id:existing?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,purchaseId:`${tradeId}-IN`,itemId,date:trade.date,name:l.name.trim(),category:l.category,variant:l.variant.trim(),qty:num(l.qty),totalCost:total,cashCost:0,unitCost:round2(l.valueEach),estimatedValueEach:round2(l.valueEach),paidBy:'Trade / Barter',source:trade.partner?`Trade with ${trade.partner}`:`Trade ${tradeId}`,sourceType:'Trade Received',tradeId,notes:l.notes.trim(),photo:l.photo||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()});});
+  trade.receiveLines=receiveLines.map(l=>{const copy={...l};delete copy._itemId;delete copy._recordId;delete copy._createdAt;return copy;});
+  const given=tradeGivenTotal(),received=tradeReceivedTotal(),personal=receiveLines.filter(l=>l.disposition!=='Add to inventory for resale').reduce((a,l)=>a+num(l.qty)*num(l.valueEach),0),wasEditing=Boolean(editingTradeId);
+  tradeGiveDraft=[];tradeReceiveDraft=[];tradeMeta={date:'',partner:'',notes:''};editingTradeId='';saveState();
+  toast(wasEditing?'Trade updated. Inventory and all cash/non-cash value totals were recalculated.':`Trade saved: ${money(given)} given · ${money(received)} received${personal?` · ${money(personal)} non-cash value kept`:''}.`);
+  if(wasEditing){currentParentTab='manage';renderParent();showScreen('parentScreen');}else showScreen('homeScreen');
+}
+
+function openSaleScreen(){
+  if(!state.purchases.length){ toast('Add inventory before recording a sale.'); openPurchaseScreen(); return; }
+  if(!availableInventory({excludeSaleId:editingSaleId}).length){ toast('There are no available items to sell.'); showScreen('inventoryScreen'); return; }
+  if(!saleDraft.length) saleDraft=[newSaleLine()];
+  if(!saleMeta.date) saleMeta.date=today();
+  renderSaleScreen(); showScreen('saleScreen');
+}
+function newSaleLine(){
+  const first=availableInventory()[0]?.p;
+  const price=first?suggestedPrice(first.unitCost):0;
+  return {itemId:first?.itemId||'',qty:1,priceEach:price?price.toFixed(2):'',fee:'',shipping:num(state.settings.defaultShipping)||'',packaging:num(state.settings.defaultPackaging)||'',autoFee:true};
+}
+function saleItemOptions(selected){
+  return availableInventory({excludeSaleId:editingSaleId}).map(({p,s})=>`<option value="${esc(p.itemId)}" ${p.itemId===selected?'selected':''}>${esc(p.name)}${p.variant?' — '+esc(p.variant):''} (${s.onHand} available)</option>`).join('');
+}
+function refreshAutoFee(line){
+  if(!line.autoFee) return;
+  const gross=num(line.qty)*num(line.priceEach);
+  line.fee=round2(gross*num(state.settings.defaultFeePercent)/100+num(state.settings.defaultFixedFee));
+}
+function renderSaleScreen(){
+  const editing=Boolean(editingSaleId);
+  document.getElementById('saleScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="${editing?'cancelEntryEdit()':'appBack()'}">←</button><div class="screen-heading"><h2>${editing?'Edit sale':'Record a sale'}</h2><p>${editing?'Correct the order and all inventory, delivery, profit, cash, and loan totals will update.':'Add several items for a bundle, and include delivery when needed.'}</p></div></div>
+    <div class="form-card">
+      <div class="two-col"><div class="field"><label>Sale date</label><input id="saleDate" type="date" value="${esc(saleMeta.date||today())}" onchange="saleMeta.date=this.value"></div><div class="field"><label>Payment status</label><select id="saleStatus" onchange="saleMeta.status=this.value">${options(['Paid','Pending','Canceled / Returned'],saleMeta.status||'Paid')}</select></div></div>
+      <div class="field"><label>Where did it sell?</label><select id="salePlatform" onchange="saleMeta.platform=this.value">${options(PLATFORMS,saleMeta.platform||'Instagram')}</select></div>
+      <div class="field"><label>Is she delivering this order?</label><div class="segmented"><button type="button" class="segment-btn ${!saleMeta.delivery?'active':''}" onclick="setSaleDelivery(false)">No delivery</button><button type="button" class="segment-btn ${saleMeta.delivery?'active':''}" onclick="setSaleDelivery(true)">🚗 Delivery</button></div></div>
+      ${saleMeta.delivery?`<div class="line-card" style="background:#fffaf3"><div class="field"><label>Delivery location</label><input id="deliveryLocation" value="${esc(saleMeta.deliveryLocation)}" oninput="saleMeta.deliveryLocation=this.value" placeholder="City, neighborhood, or meeting place"></div><div class="two-col"><div class="field"><label>Delivery fee charged</label><input id="deliveryFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(saleMeta.deliveryFee)}" oninput="updateDeliveryMeta('deliveryFee',this.value)" placeholder="Added to customer total"></div><div class="field"><label>Estimated gas cost</label><input id="gasCost" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(saleMeta.gasCost)}" oninput="updateDeliveryMeta('gasCost',this.value)" placeholder="Business expense"></div></div><div class="field"><label>Who paid for gas?</label><select id="gasPaidBy" onchange="saleMeta.gasPaidBy=this.value">${options(PAID_BY,saleMeta.gasPaidBy||'Business Cash')}</select></div><div class="hint">The delivery fee is added to sale revenue. Gas is saved as a Travel / Mileage expense and reduces cash profit.</div></div>`:''}
+    </div>
+    <div class="section-title"><h3>Items in this sale</h3><span>${saleDraft.length} line${saleDraft.length===1?'':'s'}</span></div>
+    <div id="saleLines"></div>
+    <button class="add-line-btn" onclick="addSaleLine()">＋ Add another sold item</button>
+    <div class="form-card"><div class="field"><label>Order notes <span style="font-weight:500;color:var(--muted)">(optional)</span></label><textarea id="saleNotes" oninput="saleMeta.notes=this.value" placeholder="Customer initials, pickup details, bundle note...">${esc(saleMeta.notes)}</textarea></div>${saleMeta.delivery?`<div class="price-tip" id="delivery-summary">Delivery adds ${money(saleMeta.deliveryFee)} to revenue and ${money(saleMeta.gasCost)} to expenses.</div>`:''}</div>
+    <button class="primary-btn" onclick="saveSale()">${editing?'Save Sale Changes ✓':'Save Sale & Celebrate 🎉'}</button>${editing?'<button class="secondary-btn" onclick="cancelEntryEdit()">Cancel editing</button>':''}`;
+  renderSaleLines();
+}
+function setSaleDelivery(value){ saleMeta.delivery=Boolean(value); if(!value){saleMeta.deliveryLocation='';saleMeta.deliveryFee='';saleMeta.gasCost='';saleMeta.gasPaidBy='Business Cash';} renderSaleScreen(); }
+function updateDeliveryMeta(field,value){
+  saleMeta[field]=value;
+  const tip=document.getElementById('delivery-summary');
+  if(tip) tip.textContent=`Delivery adds ${money(saleMeta.deliveryFee)} to revenue and ${money(saleMeta.gasCost)} to expenses.`;
+}
+
+function renderSaleLines(){
+  const box=document.getElementById('saleLines'); if(!box) return;
+  saleDraft.forEach(refreshAutoFee);
+  box.innerHTML=saleDraft.map((l,i)=>{
+    const p=getPurchase(l.itemId), s=p?{...itemStats(p),onHand:availableQtyFor(p.itemId,{excludeSaleId:editingSaleId})}:null, calc=computeLine(l);
+    return `<div class="line-card">
+      <div class="line-card-head"><strong>Sold item ${i+1}</strong>${saleDraft.length>1?`<button class="mini-btn danger-btn" onclick="removeSaleLine(${i})">Remove</button>`:''}</div>
+      <div class="field"><label>Choose item</label><select onchange="changeSaleItem(${i},this.value)">${saleItemOptions(l.itemId)}</select></div>
+      ${p?`<div class="hint">${s.onHand} available · Cost ${money(p.unitCost)} each · Suggested price ${money(suggestedPrice(p.unitCost))}</div>`:''}
+      <div class="two-col" style="margin-top:12px">
+        <div class="field"><label>Quantity sold</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(l.qty)}" oninput="updateSaleLine(${i},'qty',this.value)"></div>
+        <div class="field"><label>Price each</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.priceEach)}" oninput="updateSaleLine(${i},'priceEach',this.value)"></div>
+      </div>
+      <div class="price-tip" id="sale-tip-${i}">Sale total: ${money(calc.gross)} · Estimated profit: ${money(calc.profit)} · Margin: ${pct(calc.margin)}</div>
+      <details><summary>Selling costs</summary>
+        <div class="two-col" style="margin-top:12px">
+          <div class="field"><label>Platform fees</label><input id="sale-fee-${i}" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.fee)}" oninput="manualFee(${i},this.value)"></div>
+          <div class="field"><label>Shipping you paid</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.shipping)}" oninput="updateSaleLine(${i},'shipping',this.value)"></div>
+        </div>
+        <div class="field"><label>Packaging / other cost</label><input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(l.packaging)}" oninput="updateSaleLine(${i},'packaging',this.value)"></div>
+        <div class="hint">Fees are estimated automatically until you type a different amount.</div>
+      </details>
+    </div>`;
+  }).join('');
+}
+function updateSaleLine(i,field,value){
+  saleDraft[i][field]=value;
+  if(['qty','priceEach'].includes(field)){
+    refreshAutoFee(saleDraft[i]);
+    const feeInput=document.getElementById(`sale-fee-${i}`);
+    if(feeInput&&saleDraft[i].autoFee) feeInput.value=saleDraft[i].fee;
+  }
+  updateSaleLineDisplay(i);
+}
+function manualFee(i,value){ saleDraft[i].fee=value; saleDraft[i].autoFee=false; updateSaleLineDisplay(i); }
+function updateSaleLineDisplay(i){
+  const l=saleDraft[i], tip=document.getElementById(`sale-tip-${i}`); if(!l||!tip) return;
+  const calc=computeLine(l);
+  tip.textContent=`Sale total: ${money(calc.gross)} · Estimated profit: ${money(calc.profit)} · Margin: ${pct(calc.margin)}`;
+}
+function changeSaleItem(i,itemId){
+  if(saleDraft.some((l,index)=>index!==i&&l.itemId===itemId)){ toast('That item is already in this sale.'); return renderSaleLines(); }
+  const p=getPurchase(itemId); saleDraft[i].itemId=itemId; saleDraft[i].qty=1; saleDraft[i].priceEach=suggestedPrice(p.unitCost).toFixed(2); saleDraft[i].autoFee=true; saleDraft[i].shipping=num(state.settings.defaultShipping)||''; saleDraft[i].packaging=num(state.settings.defaultPackaging)||''; refreshAutoFee(saleDraft[i]); renderSaleLines();
+}
+function addSaleLine(){
+  const used=new Set(saleDraft.map(l=>l.itemId));
+  const next=availableInventory({excludeSaleId:editingSaleId}).find(x=>!used.has(x.p.itemId));
+  if(!next) return toast('Every available item is already in this sale.');
+  const line=newSaleLine(); line.itemId=next.p.itemId; line.priceEach=suggestedPrice(next.p.unitCost).toFixed(2); refreshAutoFee(line); saleDraft.push(line); renderSaleScreen();
+}
+function removeSaleLine(i){ saleDraft.splice(i,1); renderSaleScreen(); }
+function saveSale(){
+  saleMeta.date=document.getElementById('saleDate').value||today();saleMeta.status=document.getElementById('saleStatus').value;saleMeta.platform=document.getElementById('salePlatform').value;saleMeta.notes=document.getElementById('saleNotes').value;
+  if(saleMeta.delivery){saleMeta.deliveryLocation=document.getElementById('deliveryLocation')?.value||'';saleMeta.deliveryFee=document.getElementById('deliveryFee')?.value||'';saleMeta.gasCost=document.getElementById('gasCost')?.value||'';saleMeta.gasPaidBy=document.getElementById('gasPaidBy')?.value||'Business Cash';}
+  const date=saleMeta.date,status=saleMeta.status,platform=saleMeta.platform,notes=saleMeta.notes.trim(),totalsBefore=totals(),original=editingSaleId?state.sales.find(s=>s.saleId===editingSaleId):null;
+  const qtyByItem={};
+  for(const l of saleDraft){const p=getPurchase(l.itemId),available=availableQtyFor(l.itemId,{excludeSaleId:editingSaleId});if(!p)return toast('Choose a valid inventory item.');if(num(l.qty)<=0||!Number.isInteger(num(l.qty)))return toast('Quantity sold must be a whole number.');qtyByItem[l.itemId]=(qtyByItem[l.itemId]||0)+num(l.qty);if(status!=='Canceled / Returned'&&qtyByItem[l.itemId]>available)return toast(`Only ${available} of ${p.name} are available for this sale.`);if(num(l.priceEach)<0)return toast('Check the sale price.');}
+  if(num(saleMeta.deliveryFee)<0||num(saleMeta.gasCost)<0)return toast('Check the delivery fee and gas cost.');
+  const saleId=editingSaleId||nextId('sale','S');
+  const sale={id:original?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,saleId,date,status,platform,notes,delivery:Boolean(saleMeta.delivery),deliveryLocation:saleMeta.deliveryLocation.trim(),deliveryFee:round2(saleMeta.deliveryFee),gasCost:round2(saleMeta.gasCost),gasPaidBy:saleMeta.gasPaidBy,lines:saleDraft.map(l=>({...l,qty:num(l.qty),priceEach:round2(l.priceEach),fee:round2(l.fee),shipping:round2(l.shipping),packaging:round2(l.packaging)})),createdAt:original?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const previousGas=state.expenses.find(e=>e.linkedSaleId===saleId);
+  if(editingSaleId){state.sales=state.sales.filter(s=>s.saleId!==editingSaleId);state.expenses=state.expenses.filter(e=>e.linkedSaleId!==editingSaleId);}
+  state.sales.push(sale);
+  if(sale.delivery&&sale.gasCost>0){const expenseId=previousGas?.expenseId||nextId('expense','E');state.expenses.push({id:previousGas?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,expenseId,date,category:'Travel / Mileage',description:`Delivery gas — ${saleId}${sale.deliveryLocation?' · '+sale.deliveryLocation:''}`,amount:sale.gasCost,paidBy:sale.gasPaidBy,vendor:'',notes:'Automatically added from delivery sale.',linkedSaleId:saleId,createdAt:previousGas?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()});sale.linkedExpenseId=expenseId;}
+  const saleCalc=computeSale(sale),saleProfit=saleCalc.profitAfterDelivery,wasEditing=Boolean(editingSaleId);editingSaleId='';saleDraft=[];saleMeta={date:'',status:'Paid',platform:'Instagram',notes:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'};saveState();
+  const newTotals=totals();
+  if(wasEditing){toast('Sale updated. Inventory, delivery gas, profit, cash, and parent-loan totals were recalculated.');currentParentTab='manage';renderParent();showScreen('parentScreen');return;}
+  let msg=status==='Paid'?`🎉 ${money(saleCalc.gross)} sale saved! Estimated profit after delivery gas: ${money(saleProfit)}.`:`Sale saved as ${status}.`;
+  if(status==='Paid'&&state.settings.autoApplySalesToLoan){const applied=Math.max(0,totalsBefore.loanBalance-newTotals.loanBalance);if(applied>0)msg+=` ${money(applied)} automatically went toward the parent loan.`;}
+  if(status==='Paid'&&newTotals.loanBalance>0)msg+=` ${money(newTotals.loanBalance)} remains.`;else if(status==='Paid'&&totalsBefore.loanBalance>0&&newTotals.loanBalance===0)msg+=' The startup loan is now paid off!';
+  toast(msg);showScreen('homeScreen');
+}
+
+function openExpenseScreen(id=''){
+  editingExpenseId=id||'';
+  const existing=id?state.expenses.find(e=>e.id===id):null;
+  if(existing?.linkedSaleId){editingExpenseId='';return openEditSale(existing.linkedSaleId);}
+  expenseDraft=existing?{date:existing.date,category:existing.category,description:existing.description,amount:existing.amount,paidBy:existing.paidBy,vendor:existing.vendor||'',notes:existing.notes||''}:{date:today(),category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''};
+  renderExpenseScreen();showScreen('expenseScreen');
+}
+function renderExpenseScreen(){
+  const editing=Boolean(editingExpenseId);
+  document.getElementById('expenseScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="${editing?'cancelEntryEdit()':'appBack()'}">←</button><div class="screen-heading"><h2>${editing?'Edit expense':'Add an expense'}</h2><p>${editing?'Correct the expense and all totals will update.':'Use this for business costs that are not inventory.'}</p></div></div>
+    <div class="form-card">
+      <div class="two-col"><div class="field"><label>Date</label><input id="expenseDate" type="date" value="${esc(expenseDraft.date||today())}"></div><div class="field"><label>Category</label><select id="expenseCategory">${options(EXPENSE_CATEGORIES,expenseDraft.category||'Packaging')}</select></div></div>
+      <div class="field"><label>What was it?</label><input id="expenseDescription" value="${esc(expenseDraft.description)}" placeholder="Shipping labels, mailers, tape..."></div>
+      <div class="two-col"><div class="field"><label>Amount</label><input id="expenseAmount" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(expenseDraft.amount)}" placeholder="0.00"></div><div class="field"><label>Who paid?</label><select id="expensePaidBy">${options(PAID_BY,expenseDraft.paidBy||'Business Cash')}</select></div></div>
+      <div class="field"><label>Vendor <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input id="expenseVendor" value="${esc(expenseDraft.vendor)}" placeholder="Store or person"></div>
+      <div class="field"><label>Notes <span style="font-weight:500;color:var(--muted)">(optional)</span></label><textarea id="expenseNotes">${esc(expenseDraft.notes)}</textarea></div>
+    </div>
+    <button class="primary-btn" onclick="saveExpense()">${editing?'Save Expense Changes ✓':'Save Expense 🧾'}</button>${editing?'<button class="secondary-btn" onclick="cancelEntryEdit()">Cancel editing</button>':''}`;
+}
+function saveExpense(){
+  const description=document.getElementById('expenseDescription').value.trim(),amount=num(document.getElementById('expenseAmount').value),existing=editingExpenseId?state.expenses.find(e=>e.id===editingExpenseId):null;
+  if(!description)return toast('Describe the expense.');if(amount<=0)return toast('Enter the expense amount.');
+  const record={id:existing?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,expenseId:existing?.expenseId||nextId('expense','E'),date:document.getElementById('expenseDate').value||today(),category:document.getElementById('expenseCategory').value,description,amount:round2(amount),paidBy:document.getElementById('expensePaidBy').value,vendor:document.getElementById('expenseVendor').value.trim(),notes:document.getElementById('expenseNotes').value.trim(),createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const wasEditing=Boolean(editingExpenseId);if(wasEditing)state.expenses=state.expenses.filter(e=>e.id!==editingExpenseId);state.expenses.push(record);editingExpenseId='';expenseDraft={date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''};saveState();toast(wasEditing?'Expense updated and all totals recalculated.':`${money(amount)} expense saved.`);if(wasEditing){currentParentTab='manage';renderParent();showScreen('parentScreen');}else showScreen('homeScreen');
+}
+
+function renderInventory(){
+  const list=state.purchases.map(p=>({p,s:itemStats(p)}));
+  document.getElementById('inventoryScreen').innerHTML=`
+    <div class="screen-heading"><h2>My inventory</h2><p>Search what is ready to sell and see what needs attention.</p></div>
+    <div class="search-row"><input id="inventorySearch" placeholder="Search item, category, size..." oninput="filterInventory()"><select id="inventoryFilter" onchange="filterInventory()"><option value="all">All items</option><option value="available">Available</option><option value="watch">Needs attention</option><option value="sold">Sold out</option></select></div>
+    <div id="inventoryList" class="inventory-list"></div>`;
+  window._inventoryList=list; filterInventory();
+}
+function filterInventory(){
+  const q=(document.getElementById('inventorySearch')?.value||'').toLowerCase(), filter=document.getElementById('inventoryFilter')?.value||'all';
+  let list=(window._inventoryList||[]).filter(({p,s})=>`${p.name} ${p.category} ${p.variant} ${p.itemId} ${sourceLabel(p)}`.toLowerCase().includes(q));
+  if(filter==='available') list=list.filter(x=>x.s.onHand>0);
+  if(filter==='watch') list=list.filter(x=>['Watch','Slow-Moving'].includes(x.s.status));
+  if(filter==='sold') list=list.filter(x=>x.s.onHand<=0);
+  const box=document.getElementById('inventoryList'); if(!box) return;
+  if(!list.length){ box.innerHTML=`<div class="empty"><div class="big">📦</div><h3>No matching items</h3><p>Add inventory or try a different search.</p></div>`; return; }
+  box.innerHTML=list.sort((a,b)=>b.s.onHand-a.s.onHand).map(({p,s})=>`
+    <div class="inventory-card">
+      ${p.photo?`<img class="item-photo" src="${p.photo}" alt="">`:`<div class="item-photo">${categoryIcon(p.category)}</div>`}
+      <div class="item-main">
+        <div class="item-top"><div style="min-width:0"><h3>${esc(p.name)}</h3><small>${esc(p.category)}${p.variant?' · '+esc(p.variant):''} · ${sourceLabel(p)}</small></div><span class="stock-pill ${s.status==='Watch'?'watch':s.status==='Slow-Moving'?'slow':''}">${s.onHand} left</span></div>
+        <div class="item-numbers"><div><strong>${money(p.unitCost)}</strong><span>TRACKED COST</span></div><div><strong>${money(num(p.estimatedValueEach)||suggestedPrice(p.unitCost))}</strong><span>VALUE / PRICE IDEA</span></div><div><strong>${s.sold} / ${s.traded}</strong><span>SOLD / TRADED</span></div></div>
+        ${p.sourceType==='Created'?`<div class="hint">Materials ${money(p.materialsCost)} · ${num(p.laborHours).toFixed(1)} hour${num(p.laborHours)===1?'':'s'} · Time value ${money(p.laborValue)}</div>`:''}
+        <div class="action-note"><b>${esc(s.status)}:</b> ${esc(s.action)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function topSellers(){
+  return state.purchases.map(p=>({p,...itemStats(p)})).filter(x=>x.sold>0).sort((a,b)=>b.sold-a.sold||b.profit-a.profit).slice(0,5);
+}
+function categoryPerformance(){
+  const map={};
+  state.purchases.forEach(p=>{ const s=itemStats(p); if(!map[p.category]) map[p.category]={units:0,revenue:0,profit:0}; map[p.category].units+=s.sold; map[p.category].revenue+=s.revenue; map[p.category].profit+=s.profit; });
+  return Object.entries(map).map(([name,v])=>({name,...v})).sort((a,b)=>b.units-a.units);
+}
+function renderProgress(){
+  const t=totals(), top=topSellers(), cats=categoryPerformance(), slow=t.inventory.filter(x=>x.status==='Slow-Moving').length;
+  const progress=t.loanFunded?Math.min(100,t.repayments/t.loanFunded*100):100;
+  const maxCat=Math.max(1,...cats.map(x=>x.units));
+  document.getElementById('progressScreen').innerHTML=`
+    <div class="screen-heading"><h2>My progress</h2><p>Cash, inventory, handmade work, and trades—without accounting overload.</p></div>
+    <div class="stat-grid" style="margin-top:14px">
+      <div class="stat-card"><span>MONEY FROM SALES</span><strong>${money(t.totalSales)}</strong></div>
+      <div class="stat-card good"><span>PROFIT AFTER COSTS</span><strong>${money(t.netProfit)}</strong></div>
+      <div class="stat-card"><span>ITEMS SOLD</span><strong>${t.unitsSold}</strong></div>
+      <div class="stat-card"><span>ITEMS TRADED</span><strong>${t.unitsTraded}</strong></div>
+      <div class="stat-card"><span>ITEMS AVAILABLE</span><strong>${t.unitsOnHand}</strong></div>
+      <div class="stat-card good"><span>NON-CASH TRADE VALUE KEPT</span><strong>${money(t.personalTradeValue)}</strong></div>
+      <div class="stat-card warn"><span>STILL OWED TO PARENT</span><strong>${money(t.loanBalance)}</strong></div>
+      <div class="stat-card good"><span>FREE BUSINESS MONEY</span><strong>${money(t.freeCash)}</strong></div>
+    </div>
+    <div class="card"><div class="section-title" style="margin:0 0 6px"><h3>Parent loan progress</h3><span>${pct(progress)}</span></div><div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div><div class="hint">Repaid ${money(t.repayments)} of ${money(t.loanFunded)} funded. Trade value never counts toward repayment.</div></div>
+    <div class="card trade-value-card"><div class="section-title" style="margin:0 0 5px"><h3>Trade value tracker</h3><span>Not cash</span></div><div class="value-summary"><div><strong>${money(t.tradeGivenValue)}</strong><span>TOTAL VALUE GIVEN</span></div><div><strong>${money(t.tradeReceivedValue)}</strong><span>TOTAL VALUE RECEIVED</span></div></div><div class="price-tip">Value difference across trades: ${money(t.tradeValueDifference)} · Kept or used instead of reselling: ${money(t.personalTradeValue)}</div></div>
+    <div class="coach-card"><h3>🌟 Next best move</h3><p>${esc(coachMessage(t))}</p></div>
+    <div class="card"><div class="section-title" style="margin:0 0 5px"><h3>Best sellers</h3><span>By quantity</span></div>${top.length?top.map((x,i)=>`<div class="rank-row"><div class="rank">${i+1}</div><div><strong>${esc(x.p.name)}</strong><small>${x.sold} sold · ${money(x.revenue)} sales</small></div><div class="rank-value">${money(x.profit)}</div></div>`).join(''):`<div class="empty" style="box-shadow:none;padding:22px"><div class="big">🏆</div><h3>Your first best seller is coming!</h3><p>Record sales to fill this list.</p></div>`}</div>
+    <div class="card"><div class="section-title" style="margin:0 0 5px"><h3>What sells by category</h3><span>${slow} slow item${slow===1?'':'s'}</span></div>${cats.length?cats.slice(0,7).map(c=>`<div class="bar-row"><div class="bar-label"><span>${esc(c.name)}</span><span>${c.units} sold</span></div><div class="bar"><div style="width:${Math.max(3,c.units/maxCat*100)}%"></div></div></div>`).join(''):'<p class="hint">Category results appear after sales are entered.</p>'}</div>`;
+}
+
+function renderParent(){
+  const el=document.getElementById('parentScreen');
+  if(!parentUnlocked){
+    el.innerHTML=`<div class="locked"><div class="lock-icon">🔒</div><div class="screen-heading"><h2>Parent area</h2><p>Financial details, corrections, settings, and backups are protected.</p></div><div class="form-card" style="max-width:420px;margin:18px auto 0"><div class="field"><label>Parent PIN</label><input id="parentPinInput" type="password" inputmode="numeric" maxlength="4" placeholder="4 digits" onkeydown="if(event.key==='Enter')unlockParent()"></div><button class="primary-btn" onclick="unlockParent()">Unlock</button></div></div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="screen-heading"><h2>Parent dashboard</h2><p>Review the full financial picture and maintain the app.</p></div>
+    <div class="parent-tabs">
+      ${[['summary','Summary'],['money','Loan & Cash'],['settings','Settings'],['manage','Edit Data'],['backup','Backup']].map(([id,label])=>`<button class="tab-btn ${currentParentTab===id?'active':''}" onclick="showParentTab('${id}')">${label}</button>`).join('')}
+    </div>
+    <div id="parentSummary" class="parent-panel ${currentParentTab==='summary'?'active':''}"></div>
+    <div id="parentMoney" class="parent-panel ${currentParentTab==='money'?'active':''}"></div>
+    <div id="parentSettings" class="parent-panel ${currentParentTab==='settings'?'active':''}"></div>
+    <div id="parentManage" class="parent-panel ${currentParentTab==='manage'?'active':''}"></div>
+    <div id="parentBackup" class="parent-panel ${currentParentTab==='backup'?'active':''}"></div>`;
+  renderParentPanels();
+}
+function unlockParent(){
+  const pin=document.getElementById('parentPinInput')?.value||'';
+  if(pin!==String(state.settings.pin)) return toast('That PIN is not correct.');
+  parentUnlocked=true; renderParent(); toast('Parent area unlocked.');
+}
+function showParentTab(id){ currentParentTab=id; renderParent(); }
+function renderParentPanels(){ renderParentSummary(); renderParentMoney(); renderParentSettings(); renderManage(); renderBackup(); }
+function renderParentSummary(){
+  const t=totals();
+  const el=document.getElementById('parentSummary'); if(!el) return;
+  el.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><span>GROSS SALES + DELIVERY FEES</span><strong>${money(t.totalSales)}</strong></div>
+      <div class="stat-card good"><span>ITEM PROFIT BEFORE EXPENSES</span><strong>${money(t.grossProfit)}</strong></div>
+      <div class="stat-card warn"><span>OPERATING EXPENSES</span><strong>${money(t.expenses)}</strong></div>
+      <div class="stat-card good"><span>NET PROFIT AFTER LABOR & EXPENSES</span><strong>${money(t.netProfit)}</strong></div>
+      <div class="stat-card"><span>BUSINESS CASH</span><strong>${money(t.businessCash)}</strong></div>
+      <div class="stat-card"><span>PENDING PAYMENTS</span><strong>${money(t.pendingCash)}</strong></div>
+      <div class="stat-card warn"><span>PARENT LOAN BALANCE</span><strong>${money(t.loanBalance)}</strong></div>
+      <div class="stat-card"><span>INVENTORY TRACKED VALUE</span><strong>${money(t.inventoryValue)}</strong></div>
+      <div class="stat-card good"><span>NON-CASH TRADE VALUE KEPT</span><strong>${money(t.personalTradeValue)}</strong></div>
+      <div class="stat-card"><span>NET TRADE VALUE DIFFERENCE</span><strong>${money(t.tradeValueDifference)}</strong></div>
+    </div>
+    <div class="card"><h3 style="margin-top:0">How these numbers work</h3><p class="hint" style="font-size:12px">Handmade inventory separates cash material cost from the value of her time. Cash profit includes sales and delivery fees, minus item costs and operating expenses such as delivery gas. Non-cash trade value is reported separately and never reduces the parent-loan balance.</p><div class="stat-card good" style="margin-top:12px;box-shadow:none;background:var(--mint)"><span>FREE CASH AFTER LOAN</span><strong>${money(t.freeCash)}</strong></div></div>
+    <button class="secondary-btn" onclick="window.print()">Print Parent Summary</button>`;
+}
+
+function renderParentMoney(){
+  const t=totals(),el=document.getElementById('parentMoney');if(!el)return;
+  const edit=editingMoneyId?state.money.find(m=>m.id===editingMoneyId):null;
+  el.innerHTML=`
+    <div class="card"><div class="section-title" style="margin:0"><h3>Loan balance</h3><span>${money(t.loanBalance)} remaining</span></div><div class="progress-track"><div class="progress-fill" style="width:${t.loanFunded?Math.min(100,t.repayments/t.loanFunded*100):100}%"></div></div><div class="hint">Total parent funding: ${money(t.loanFunded)} · Auto-applied from sales: ${money(t.automaticRepayment)} · Manual repayments: ${money(t.manualRepayments)}</div></div>
+    <div class="form-card"><h3>${edit?'Edit money transaction':'Record a money transaction'}</h3>
+      <div class="two-col"><div class="field"><label>Date</label><input id="moneyDate" type="date" value="${esc(edit?.date||today())}"></div><div class="field"><label>Type</label><select id="moneyType">${options(MONEY_TYPES,edit?.type||'Repayment to Parent')}</select></div></div>
+      <div class="two-col"><div class="field"><label>Amount</label><input id="moneyAmount" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(edit?.amount||'')}" placeholder="0.00"></div><div class="field"><label>Method</label><select id="moneyMethod">${options(METHODS,edit?.method||'Cash')}</select></div></div>
+      <div class="field"><label>Notes <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input id="moneyNotes" value="${esc(edit?.notes||'')}" placeholder="Weekly repayment, extra startup money..."></div>
+      <button class="primary-btn" onclick="saveMoney()">${edit?'Save Money Changes ✓':'Save Money Transaction'}</button>${edit?'<button class="secondary-btn" onclick="cancelMoneyEdit()">Cancel editing</button>':''}
+    </div>
+    <div class="section-title"><h3>Recent transactions</h3><span>${state.money.length}</span></div>
+    ${(state.money.slice().reverse().slice(0,15).map(m=>`<div class="record-row"><div class="record-row-top"><div><h4>${esc(m.type)}</h4><p>${displayDate(m.date)} · ${esc(m.method)}${m.notes?' · '+esc(m.notes):''}</p></div><div class="record-amount">${money(m.amount)}</div></div><div class="record-actions"><button class="mini-btn" onclick="editMoney('${esc(m.id)}')">Edit</button></div></div>`).join(''))||'<div class="empty"><div class="big">💵</div><h3>No money transactions yet</h3><p>Record repayments and extra cash advances here.</p></div>'}`;
+}
+function editMoney(id){editingMoneyId=id;currentParentTab='money';renderParent();setTimeout(()=>document.getElementById('moneyAmount')?.focus(),0);}
+function cancelMoneyEdit(){editingMoneyId='';renderParent();}
+function saveMoney(){
+  const amount=num(document.getElementById('moneyAmount').value);if(amount<=0)return toast('Enter an amount.');
+  const existing=editingMoneyId?state.money.find(m=>m.id===editingMoneyId):null;
+  const record={id:existing?.id||crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,moneyId:existing?.moneyId||nextId('money','M'),date:document.getElementById('moneyDate').value||today(),type:document.getElementById('moneyType').value,amount:round2(amount),method:document.getElementById('moneyMethod').value,notes:document.getElementById('moneyNotes').value.trim(),createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const wasEditing=Boolean(editingMoneyId);if(wasEditing)state.money=state.money.filter(m=>m.id!==editingMoneyId);state.money.push(record);editingMoneyId='';saveState();toast(wasEditing?'Money transaction updated and loan/cash totals recalculated.':'Money transaction saved.');renderParent();
+}
+function renderParentSettings(){
+  const s=state.settings, el=document.getElementById('parentSettings'); if(!el) return;
+  el.innerHTML=`<div class="form-card"><h3>Business and pricing settings</h3>
+    <div class="field"><label>Business name</label><input id="setBusiness" value="${esc(s.businessName)}"></div>
+    <div class="two-col"><div class="field"><label>Daughter's first name</label><input id="setDaughter" value="${esc(s.daughterName)}"></div><div class="field"><label>Parent name</label><input id="setParent" value="${esc(s.parentName)}"></div></div>
+    <div class="two-col"><div class="field"><label>Default platform fee %</label><input id="setFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.defaultFeePercent)}"></div><div class="field"><label>Fixed fee per sale</label><input id="setFixedFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.defaultFixedFee)}"></div></div>
+    <div class="two-col"><div class="field"><label>Default shipping paid</label><input id="setShipping" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.defaultShipping)}"></div><div class="field"><label>Packaging per item</label><input id="setPackaging" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.defaultPackaging)}"></div></div>
+    <div class="two-col"><div class="field"><label>Target profit margin %</label><input id="setTarget" type="number" min="1" max="90" step="1" value="${esc(s.targetMargin)}"></div><div class="field"><label>Low-margin warning %</label><input id="setLow" type="number" min="0" max="90" step="1" value="${esc(s.lowMargin)}"></div></div>
+    <div class="two-col"><div class="field"><label>Watch after days</label><input id="setWatch" type="number" min="1" step="1" value="${esc(s.watchDays)}"></div><div class="field"><label>Slow-moving after days</label><input id="setSlow" type="number" min="1" step="1" value="${esc(s.slowDays)}"></div></div>
+    <div class="field"><label>Default value of her time per hour</label><input id="setLaborRate" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.defaultLaborRate)}"><div class="hint">Used as the starting labor value when she adds handmade inventory. She can change it item by item.</div></div>
+    <div class="field"><label>Apply paid sales to parent loan automatically?</label><select id="setAutoLoan"><option value="yes" ${s.autoApplySalesToLoan?'selected':''}>Yes — simplest option</option><option value="no" ${!s.autoApplySalesToLoan?'selected':''}>No — record repayments manually</option></select><div class="hint">When on, paid sale cash pays the loan first. Free business money appears after the balance reaches $0.</div></div><div class="field"><label>Starting parent-loan balance</label><input id="setStartingLoan" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" value="${esc(s.startingLoan)}"><div class="hint">Do not include purchases already entered as Parent Loan, or the balance will be counted twice.</div></div>
+    <div class="field"><label>Change parent PIN</label><input id="setPin" type="password" inputmode="numeric" maxlength="4" value="${esc(s.pin)}"></div>
+    <button class="primary-btn" onclick="saveSettings()">Save Settings</button></div>`;
+}
+function saveSettings(){
+  const pin=document.getElementById('setPin').value.trim(); if(!/^\d{4}$/.test(pin)) return toast('The parent PIN must be 4 digits.');
+  const target=num(document.getElementById('setTarget').value), fee=num(document.getElementById('setFee').value);
+  if(target+fee>=95) return toast('Target margin plus fees is too high for pricing calculations.');
+  Object.assign(state.settings,{
+    businessName:document.getElementById('setBusiness').value.trim()||'Reseller Pocket',daughterName:document.getElementById('setDaughter').value.trim(),parentName:document.getElementById('setParent').value.trim()||'Parent',pin,
+    defaultFeePercent:fee,defaultFixedFee:num(document.getElementById('setFixedFee').value),defaultShipping:num(document.getElementById('setShipping').value),defaultPackaging:num(document.getElementById('setPackaging').value),targetMargin:target,lowMargin:num(document.getElementById('setLow').value),watchDays:num(document.getElementById('setWatch').value),slowDays:num(document.getElementById('setSlow').value),defaultLaborRate:num(document.getElementById('setLaborRate').value),startingLoan:num(document.getElementById('setStartingLoan').value),autoApplySalesToLoan:document.getElementById('setAutoLoan').value==='yes'
+  });
+  saveState(); toast('Settings saved.'); renderParent();
+}
+function groupedPurchases(){
+  const map={}; state.purchases.forEach(p=>{ if(!map[p.purchaseId]) map[p.purchaseId]=[]; map[p.purchaseId].push(p); }); return Object.values(map).sort((a,b)=>b[0].date.localeCompare(a[0].date));
+}
+function renderManage(){
+  const el=document.getElementById('parentManage');if(!el)return;
+  el.innerHTML=`
+    <div class="coach-card backup-warning"><h3>Edit saved entries</h3><p>Tap <b>Edit</b>, correct the original entry, and save it. The app automatically recalculates inventory, profit, cash, delivery gas, trade value, and the parent-loan balance. Items already sold or traded cannot be removed or reduced below the amount already used.</p></div>
+    <div class="section-title"><h3>Inventory entries</h3><span>${groupedPurchases().length}</span></div>
+    ${groupedPurchases().slice(0,40).map(group=>{const total=group.reduce((a,p)=>a+num(p.totalCost),0),used=group.some(p=>outgoingQty(p.itemId)>0),fromTrade=group.some(p=>p.sourceType==='Trade Received');return `<div class="record-row"><div class="record-row-top"><div><h4>${esc(group[0].purchaseId)} · ${sourceLabel(group[0])}</h4><p>${displayDate(group[0].date)} · ${esc(group[0].paidBy)} · ${group.map(p=>esc(p.name)).join(', ')}</p></div><div class="record-amount">${money(total)}</div></div><div class="record-actions"><button class="mini-btn" onclick="${fromTrade?`openEditTrade('${esc(group[0].tradeId)}')`:`openEditPurchase('${esc(group[0].purchaseId)}')`}">Edit</button><button class="mini-btn danger-btn" ${used||fromTrade?'disabled':''} onclick="deletePurchaseGroup('${esc(group[0].purchaseId)}')">${fromTrade?'Delete trade instead':used?'Has activity':'Delete'}</button></div></div>`;}).join('')||'<p class="hint">No inventory entries.</p>'}
+    <div class="section-title"><h3>Trades</h3><span>${state.trades.length}</span></div>
+    ${state.trades.slice().reverse().slice(0,30).map(t=>{const given=(t.giveLines||[]).reduce((a,l)=>a+num(l.qty)*num(l.valueEach),0),received=(t.receiveLines||[]).reduce((a,l)=>a+num(l.qty)*num(l.valueEach),0),receivedInventory=state.purchases.filter(p=>p.tradeId===t.tradeId),used=receivedInventory.some(p=>outgoingQty(p.itemId)>0);return `<div class="record-row"><div class="record-row-top"><div><h4>${esc(t.tradeId)}${t.partner?' · '+esc(t.partner):''}</h4><p>${displayDate(t.date)} · Gave ${money(given)} value · Received ${money(received)} value</p></div><div class="record-amount">${money(received-given)}</div></div><div class="record-actions"><button class="mini-btn" onclick="openEditTrade('${esc(t.tradeId)}')">Edit</button><button class="mini-btn danger-btn" ${used?'disabled':''} onclick="deleteTrade('${esc(t.tradeId)}')">${used?'Received item has activity':'Delete trade'}</button></div></div>`;}).join('')||'<p class="hint">No trades.</p>'}
+    <div class="section-title"><h3>Sales</h3><span>${state.sales.length}</span></div>
+    ${state.sales.slice().reverse().slice(0,35).map(s=>{const total=computeSale(s).gross;return `<div class="record-row"><div class="record-row-top"><div><h4>${esc(s.saleId)} · ${esc(s.status)}${s.delivery?' · Delivery':''}</h4><p>${displayDate(s.date)} · ${esc(s.platform)} · ${s.lines.length} line${s.lines.length===1?'':'s'}${s.deliveryLocation?' · '+esc(s.deliveryLocation):''}</p></div><div class="record-amount">${money(total)}</div></div><div class="record-actions"><button class="mini-btn" onclick="openEditSale('${esc(s.saleId)}')">Edit</button><button class="mini-btn danger-btn" onclick="deleteSale('${esc(s.saleId)}')">Delete</button></div></div>`;}).join('')||'<p class="hint">No sales.</p>'}
+    <div class="section-title"><h3>Expenses</h3><span>${state.expenses.length}</span></div>
+    ${state.expenses.slice().reverse().slice(0,35).map(e=>`<div class="record-row"><div class="record-row-top"><div><h4>${esc(e.description)}</h4><p>${displayDate(e.date)} · ${esc(e.category)} · ${esc(e.paidBy)}${e.linkedSaleId?' · Linked to '+esc(e.linkedSaleId):''}</p></div><div class="record-amount">${money(e.amount)}</div></div><div class="record-actions"><button class="mini-btn" onclick="${e.linkedSaleId?`openEditSale('${esc(e.linkedSaleId)}')`:`openExpenseScreen('${esc(e.id)}')`}">${e.linkedSaleId?'Edit sale':'Edit'}</button><button class="mini-btn danger-btn" ${e.linkedSaleId?'disabled':''} onclick="deleteRecord('expenses','${esc(e.id)}')">${e.linkedSaleId?'Delete sale instead':'Delete'}</button></div></div>`).join('')||'<p class="hint">No expenses.</p>'}
+    <div class="section-title"><h3>Money transactions</h3><span>${state.money.length}</span></div>
+    ${state.money.slice().reverse().slice(0,25).map(m=>`<div class="record-row"><div class="record-row-top"><div><h4>${esc(m.type)}</h4><p>${displayDate(m.date)} · ${esc(m.method)}</p></div><div class="record-amount">${money(m.amount)}</div></div><div class="record-actions"><button class="mini-btn" onclick="editMoney('${esc(m.id)}')">Edit</button><button class="mini-btn danger-btn" onclick="deleteRecord('money','${esc(m.id)}')">Delete</button></div></div>`).join('')||'<p class="hint">No money transactions.</p>'}`;
+}
+
+function openEditPurchase(purchaseId){
+  const group=state.purchases.filter(p=>p.purchaseId===purchaseId);if(!group.length)return toast('That inventory entry could not be found.');
+  if(group[0].sourceType==='Trade Received')return openEditTrade(group[0].tradeId);
+  editingPurchaseId=purchaseId;editingTradeId='';editingSaleId='';editingExpenseId='';
+  if(group[0].sourceType==='Created'){
+    createdMeta={date:group[0].date,paidBy:group[0].paidBy};
+    createdDraft=group.map(p=>({id:p.id,itemId:p.itemId,createdAt:p.createdAt,name:p.name,category:p.category,variant:p.variant||'',qty:p.qty,materialsCost:p.materialsCost??p.cashCost??0,laborHours:p.laborHours||'',laborRate:p.laborRate||state.settings.defaultLaborRate,estimatedValueEach:p.estimatedValueEach||'',photo:p.photo||'',notes:p.notes||''}));openCreatedScreen();
+  }else{
+    purchaseMeta={date:group[0].date,paidBy:group[0].paidBy,source:group[0].source||''};
+    purchaseDraft=group.map(p=>({id:p.id,itemId:p.itemId,createdAt:p.createdAt,name:p.name,category:p.category,variant:p.variant||'',qty:p.qty,totalCost:p.totalCost,estimatedValueEach:p.estimatedValueEach||'',photo:p.photo||'',notes:p.notes||''}));openPurchaseScreen();
+  }
+}
+function openEditTrade(tradeId){
+  const trade=state.trades.find(t=>t.tradeId===tradeId);if(!trade)return toast('That trade could not be found.');
+  editingTradeId=tradeId;editingPurchaseId='';editingSaleId='';editingExpenseId='';tradeMeta={date:trade.date,partner:trade.partner||'',notes:trade.notes||''};tradeGiveDraft=clone(trade.giveLines||[]);
+  const received=state.purchases.filter(p=>p.tradeId===tradeId);let inventoryIndex=0;
+  tradeReceiveDraft=(trade.receiveLines||[]).map(l=>{let p=null;if(l.disposition==='Add to inventory for resale'){p=received.find(x=>x.itemId===l.inventoryItemId)||received[inventoryIndex++];}return {...clone(l),_itemId:p?.itemId||l.inventoryItemId||'',_recordId:p?.id||'',_createdAt:p?.createdAt||'',photo:p?.photo||l.photo||''};});openTradeScreen();
+}
+function openEditSale(saleId){
+  const sale=state.sales.find(s=>s.saleId===saleId);if(!sale)return toast('That sale could not be found.');
+  editingSaleId=saleId;editingPurchaseId='';editingTradeId='';editingExpenseId='';saleMeta={date:sale.date,status:sale.status,platform:sale.platform,notes:sale.notes||'',delivery:Boolean(sale.delivery),deliveryLocation:sale.deliveryLocation||'',deliveryFee:sale.deliveryFee||'',gasCost:sale.gasCost||'',gasPaidBy:sale.gasPaidBy||'Business Cash'};saleDraft=clone(sale.lines||[]);renderSaleScreen();showScreen('saleScreen');
+}
+function cancelEntryEdit(){
+  editingPurchaseId='';editingTradeId='';editingSaleId='';editingExpenseId='';purchaseDraft=[];createdDraft=[];tradeGiveDraft=[];tradeReceiveDraft=[];saleDraft=[];purchaseMeta={date:'',paidBy:'Parent Loan',source:''};createdMeta={date:'',paidBy:'Parent Loan'};tradeMeta={date:'',partner:'',notes:''};saleMeta={date:'',status:'Paid',platform:'Instagram',notes:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'};expenseDraft={date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''};currentParentTab='manage';renderParent();showScreen('parentScreen');
+}
+
+function deletePurchaseGroup(purchaseId){
+  const group=state.purchases.filter(p=>p.purchaseId===purchaseId);
+  if(group.some(p=>p.sourceType==='Trade Received')) return toast('Delete the original trade instead.');
+  if(group.some(p=>outgoingQty(p.itemId)>0)) return toast('Delete its related sales or trades first.');
+  if(!confirm(`Delete inventory entry ${purchaseId} and all of its items?`)) return;
+  state.purchases=state.purchases.filter(p=>p.purchaseId!==purchaseId); saveState(); toast('Inventory entry deleted.'); renderParent();
+}
+function deleteTrade(tradeId){
+  const received=state.purchases.filter(p=>p.tradeId===tradeId);
+  if(received.some(p=>outgoingQty(p.itemId)>0)) return toast('A received item has already been sold or traded. Delete that later activity first.');
+  if(!confirm(`Delete trade ${tradeId}? Given inventory will be restored and received inventory will be removed.`)) return;
+  state.trades=state.trades.filter(t=>t.tradeId!==tradeId); state.purchases=state.purchases.filter(p=>p.tradeId!==tradeId); saveState(); toast('Trade deleted.'); renderParent();
+}
+function deleteSale(saleId){
+  if(!confirm(`Delete sale ${saleId}? Any automatically linked delivery-gas expense will also be deleted.`)) return;
+  state.sales=state.sales.filter(s=>s.saleId!==saleId); state.expenses=state.expenses.filter(e=>e.linkedSaleId!==saleId); saveState(); toast('Sale deleted.'); renderParent();
+}
+
+function deleteRecord(collection,id){
+  if(!confirm('Delete this record? This cannot be undone unless you have a backup.')) return;
+  state[collection]=state[collection].filter(x=>x.id!==id); saveState(); toast('Record deleted.'); renderParent();
+}
+
+function setCloudStatus(status,message){
+  cloudStatus=status; cloudStatusMessage=message||'';
+  const pill=document.getElementById('syncPill'); if(!pill) return;
+  pill.className=`sync-pill ${status==='connected'?'cloud':status==='syncing'?'syncing':status==='offline'?'offline':status==='error'?'error':''}`;
+  const labels={connected:'● Cloud synced',syncing:'◌ Syncing…',offline:'● Offline — saved',error:'! Sync problem',phone:'● Saved on phone'};
+  pill.textContent=labels[status]||labels.phone;
+  const banner=document.getElementById('connectionBanner');
+  if(banner){
+    if(status==='error'){ banner.textContent=message||'Cloud sync needs attention. Tap the status at the top.'; banner.classList.add('show'); }
+    else if(status==='offline'&&cloudUser){ banner.textContent='No internet right now. Changes are safe on this phone and will sync automatically when the connection returns.'; banner.classList.add('show'); }
+    else banner.classList.remove('show');
+  }
+}
+function cloudConfigured(){ return Boolean(cloudConfig.url&&cloudConfig.anonKey); }
+function configureSupabase(){
+  if(!cloudConfigured()||!window.supabase?.createClient) return null;
+  if(supabaseClient) return supabaseClient;
+  try{
+    supabaseClient=window.supabase.createClient(cloudConfig.url,cloudConfig.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    supabaseClient.auth.onAuthStateChange((_event,session)=>{
+      const previous=cloudUser?.id; cloudUser=session?.user||null;
+      if(cloudUser){ setCloudStatus('syncing','Connecting to shared business data…'); if(previous!==cloudUser.id){subscribeCloudChanges();syncCloudNow({showToast:false});} }
+      else{ unsubscribeCloudChanges(); setCloudStatus('phone','Saved on phone'); }
+      renderCloudModal(); if(parentUnlocked&&currentParentTab==='backup') renderBackup();
+    });
+    return supabaseClient;
+  }catch(e){ console.error(e); setCloudStatus('error','The cloud project details could not be used.'); return null; }
+}
+function readCloudInputs(){
+  const url=document.getElementById('cloudUrl')?.value.trim();
+  const key=document.getElementById('cloudAnonKey')?.value.trim();
+  const device=document.getElementById('cloudDeviceName')?.value.trim();
+  if(url!==undefined) cloudConfig.url=url;
+  if(key!==undefined) cloudConfig.anonKey=key;
+  if(device!==undefined) cloudConfig.deviceName=device;
+  saveCloudConfig();
+}
+function openCloudModal(fromOnboarding=false){
+  cloudModalFromOnboarding=fromOnboarding;
+  renderCloudModal(); document.getElementById('cloudModal').classList.add('show');
+  try{ history.pushState({appScreen:currentScreen,appModal:'cloud'},'',location.href); }catch(e){}
+}
+function closeCloudModal(){
+  document.getElementById('cloudModal').classList.remove('show');
+  if(cloudModalFromOnboarding&&!state.setupComplete) document.getElementById('onboardingModal').classList.add('show');
+  cloudModalFromOnboarding=false;
+  if(history.state?.appModal){try{history.back();}catch(e){}}
+}
+function renderCloudModal(){
+  const card=document.getElementById('cloudModalCard'); if(!card) return;
+  const configured=cloudConfigured(), signedIn=Boolean(cloudUser), embedded=Boolean((window.RESELLER_CLOUD_CONFIG||{}).url);
+  card.innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="closeCloudModal()">←</button><div class="screen-heading"><h2>Cloud Sync</h2><p>Keep the same inventory and sales on every family phone.</p></div></div>
+    <div class="form-card cloud-status-card">
+      <div class="cloud-status-row"><strong><span class="cloud-dot ${signedIn?'connected':cloudStatus==='syncing'?'syncing':cloudStatus==='error'?'error':''}"></span>${signedIn?'Connected to the family account':configured?'Project ready — sign in':'Cloud project not configured'}</strong><span class="status-badge">${esc(cloudConfig.deviceName||'This phone')}</span></div>
+      <p class="cloud-small">${signedIn?`Signed in as ${esc(cloudUser.email||'family account')}. The app checks for updates when it opens, returns to the foreground, comes online, every 30 seconds, and through live database updates.`:'Use one shared family email and password on all three phones.'}</p>
+    </div>
+    <div class="form-card">
+      <h3>1. Cloud project</h3>
+      <div class="field"><label>Supabase project URL</label><input id="cloudUrl" value="${esc(cloudConfig.url)}" ${embedded?'readonly':''} placeholder="https://your-project.supabase.co"></div>
+      <div class="field"><label>Public anon / publishable key</label><textarea id="cloudAnonKey" ${embedded?'readonly':''} placeholder="Paste the public project key">${esc(cloudConfig.anonKey)}</textarea></div>
+      <div class="field"><label>Name this device</label><input id="cloudDeviceName" value="${esc(cloudConfig.deviceName)}" placeholder="Example: Her phone, Mom's phone"></div>
+      <button class="secondary-btn" onclick="saveCloudProjectSettings()">Save Project Settings</button>
+      <div class="hint">The URL and public key are connection settings, not the private service-role key. Never paste a service-role key into the app.</div>
+    </div>
+    <div class="form-card">
+      <h3>2. Family account</h3>
+      ${signedIn?`<p class="hint">Use this same family account on the other phones.</p><div class="cloud-actions"><button class="primary-btn" onclick="syncCloudNow({showToast:true})">Sync Now</button><button class="secondary-btn" onclick="cloudSignOut()">Sign Out</button></div>`:`
+      <div class="field"><label>Family email</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="A parent-controlled email"></div>
+      <div class="field"><label>Family password</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="At least 6 characters"></div>
+      <div class="cloud-actions"><button class="primary-btn" onclick="cloudSignIn()">Sign In</button><button class="secondary-btn" onclick="cloudSignUp()">Create Account</button></div>`}
+    </div>
+    <button class="secondary-btn" onclick="closeCloudModal()">Close</button>`;
+}
+function saveCloudProjectSettings(){
+  readCloudInputs(); supabaseClient=null; cloudUser=null; unsubscribeCloudChanges();
+  if(!cloudConfigured()) return toast('Enter both the Supabase project URL and public key.');
+  configureSupabase(); setCloudStatus('phone','Project settings saved. Sign in next.'); renderCloudModal(); toast('Cloud project settings saved.');
+}
+async function cloudSignUp(){
+  readCloudInputs(); const client=configureSupabase(); if(!client) return toast('Save valid cloud project settings first.');
+  const email=document.getElementById('cloudEmail')?.value.trim(),password=document.getElementById('cloudPassword')?.value||'';
+  if(!email||password.length<6) return toast('Enter a valid email and a password of at least 6 characters.');
+  setCloudStatus('syncing','Creating the family account…');
+  const {data,error}=await client.auth.signUp({email,password});
+  if(error){setCloudStatus('error',error.message);return toast(error.message);}
+  if(data.session){cloudUser=data.user;await syncCloudNow({showToast:true});closeCloudModal();}
+  else{setCloudStatus('phone','Check the family email to confirm the account, then sign in.');toast('Check the email confirmation message, then return and sign in.');}
+}
+async function cloudSignIn(){
+  readCloudInputs(); const client=configureSupabase(); if(!client) return toast('Save valid cloud project settings first.');
+  const email=document.getElementById('cloudEmail')?.value.trim(),password=document.getElementById('cloudPassword')?.value||'';
+  if(!email||!password) return toast('Enter the family email and password.');
+  setCloudStatus('syncing','Signing in…');
+  const {data,error}=await client.auth.signInWithPassword({email,password});
+  if(error){setCloudStatus('error',error.message);return toast(error.message);}
+  cloudUser=data.user; await syncCloudNow({showToast:true,preferRemote:!state.setupComplete});
+  document.getElementById('onboardingModal').classList.remove('show'); closeCloudModal();
+}
+async function cloudSignOut(){
+  if(supabaseClient) await supabaseClient.auth.signOut(); cloudUser=null;unsubscribeCloudChanges();setCloudStatus('phone','Saved on phone');renderCloudModal();toast('Signed out on this phone.');
+}
+function scheduleCloudPush(){
+  if(!cloudUser||!navigator.onLine) return;
+  clearTimeout(cloudPushTimer); cloudPushTimer=setTimeout(()=>pushCloudState(),900);
+}
+async function pushCloudState(){
+  if(!cloudUser||!supabaseClient||cloudSyncInProgress||!navigator.onLine) return;
+  cloudSyncInProgress=true; setCloudStatus('syncing','Saving to the family cloud…');
+  try{
+    const now=new Date().toISOString();
+    if(!state.meta.modifiedAt) state.meta.modifiedAt=now;
+    const payload=clone(state);
+    const {data,error}=await supabaseClient.from('reseller_app_state').upsert({user_id:cloudUser.id,payload,updated_at:now,device_name:cloudConfig.deviceName||'Family phone'},{onConflict:'user_id'}).select('updated_at').single();
+    if(error) throw error;
+    cloudConfig.lastSyncAt=data?.updated_at||now; saveCloudConfig();
+    await ensureDailyCloudBackup();
+    setCloudStatus('connected','Cloud synced');
+  }catch(e){console.error(e);setCloudStatus(navigator.onLine?'error':'offline',e.message||'Cloud save failed.');}
+  finally{cloudSyncInProgress=false;}
+}
+async function syncCloudNow(options={}){
+  if(!navigator.onLine){setCloudStatus('offline','No internet connection.');if(options.showToast)toast('Offline — changes remain safe on this phone.');return;}
+  const client=configureSupabase(); if(!client) return setCloudStatus('phone','Saved on phone');
+  if(!cloudUser){const {data}=await client.auth.getSession();cloudUser=data.session?.user||null;}
+  if(!cloudUser){setCloudStatus('phone','Saved on phone');return;}
+  if(cloudSyncInProgress) return;
+  cloudSyncInProgress=true; setCloudStatus('syncing','Checking for newer family data…');
+  try{
+    const {data,error}=await client.from('reseller_app_state').select('payload,updated_at,device_name').eq('user_id',cloudUser.id).maybeSingle();
+    if(error) throw error;
+    if(!data?.payload){cloudSyncInProgress=false;await pushCloudState();if(options.showToast)toast('This phone created the shared cloud copy.');return;}
+    const remote=normalizeState(data.payload),remoteTime=Date.parse(remote.meta?.modifiedAt||data.updated_at||0),localTime=Date.parse(state.meta?.modifiedAt||0);
+    if(options.preferRemote||remoteTime>localTime){
+      state=remote; localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+      cloudConfig.lastSyncAt=data.updated_at||new Date().toISOString();saveCloudConfig();
+      renderHeader();renderActiveScreen(currentScreen);
+      document.getElementById('onboardingModal').classList.toggle('show',!state.setupComplete);
+      if(options.showToast) toast('Latest family data loaded.');
+    }else if(localTime>remoteTime){
+      cloudSyncInProgress=false;await pushCloudState();if(options.showToast)toast('This phone’s newer changes were synced.');return;
+    }else if(options.showToast) toast('Everything is already up to date.');
+    await ensureDailyCloudBackup();setCloudStatus('connected','Cloud synced');
+  }catch(e){console.error(e);setCloudStatus(navigator.onLine?'error':'offline',e.message||'Cloud check failed.');if(options.showToast)toast('Cloud sync could not finish. Your phone copy is still safe.');}
+  finally{cloudSyncInProgress=false;}
+}
+async function ensureDailyCloudBackup(){
+  if(!cloudUser||!supabaseClient||!navigator.onLine) return;
+  const date=today();
+  try{
+    const {error}=await supabaseClient.from('reseller_app_backups').upsert({user_id:cloudUser.id,backup_date:date,payload:clone(state),state_updated_at:state.meta.modifiedAt||new Date().toISOString(),device_name:cloudConfig.deviceName||'Family phone'},{onConflict:'user_id,backup_date'});
+    if(error) throw error;
+    cloudConfig.lastBackupDate=date;saveCloudConfig();
+  }catch(e){console.error('Daily backup failed',e);}
+}
+function subscribeCloudChanges(){
+  if(!supabaseClient||!cloudUser) return;unsubscribeCloudChanges();
+  cloudChannel=supabaseClient.channel(`reseller-family-${cloudUser.id}`).on('postgres_changes',{event:'*',schema:'public',table:'reseller_app_state',filter:`user_id=eq.${cloudUser.id}`},payload=>{
+    const incoming=payload.new?.payload;if(!incoming) return;
+    const remoteTime=Date.parse(incoming.meta?.modifiedAt||payload.new?.updated_at||0),localTime=Date.parse(state.meta?.modifiedAt||0);
+    if(remoteTime>localTime){state=normalizeState(incoming);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));cloudConfig.lastSyncAt=payload.new.updated_at||new Date().toISOString();saveCloudConfig();renderHeader();renderActiveScreen(currentScreen);toast('Updated from another family phone.');}
+  }).subscribe();
+}
+function unsubscribeCloudChanges(){if(cloudChannel&&supabaseClient){supabaseClient.removeChannel(cloudChannel);}cloudChannel=null;}
+async function initCloudSync(){
+  if(!cloudConfigured()){setCloudStatus('phone','Saved on phone');return;}
+  const client=configureSupabase();if(!client)return;
+  setCloudStatus('syncing','Connecting…');
+  const {data,error}=await client.auth.getSession();
+  if(error){setCloudStatus('error',error.message);return;}
+  cloudUser=data.session?.user||null;
+  if(cloudUser){subscribeCloudChanges();await syncCloudNow({preferRemote:!state.setupComplete});}else setCloudStatus('phone','Project ready — sign in');
+  clearInterval(cloudCheckTimer);cloudCheckTimer=setInterval(()=>{if(cloudUser&&navigator.onLine)syncCloudNow();},30000);
+}
+window.addEventListener('online',()=>{if(cloudUser)syncCloudNow();else setCloudStatus('phone','Saved on phone');});
+window.addEventListener('offline',()=>setCloudStatus('offline','No internet connection.'));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&cloudUser)syncCloudNow();});
+async function loadCloudBackups(){
+  const box=document.getElementById('cloudBackupList');if(!box)return;
+  if(!cloudUser||!supabaseClient){box.innerHTML='<div class="hint">Connect and sign in to Cloud Sync first.</div>';return;}
+  box.innerHTML='<div class="hint">Loading cloud backups…</div>';
+  const {data,error}=await supabaseClient.from('reseller_app_backups').select('backup_date,state_updated_at,device_name').eq('user_id',cloudUser.id).order('backup_date',{ascending:false}).limit(30);
+  if(error){box.innerHTML=`<div class="hint">${esc(error.message)}</div>`;return;}
+  box.innerHTML=(data||[]).length?(data||[]).map(b=>`<div class="backup-row"><div><strong>${displayDate(b.backup_date)}</strong><div class="cloud-small">Saved by ${esc(b.device_name||'family phone')}</div></div><button class="mini-btn" onclick="restoreCloudBackup('${esc(b.backup_date)}')">Restore</button></div>`).join(''):'<div class="hint">No cloud snapshots yet.</div>';
+}
+async function restoreCloudBackup(date){
+  if(!cloudUser||!supabaseClient||!confirm(`Restore the cloud backup from ${displayDate(date)}? Current data will be replaced.`))return;
+  const {data,error}=await supabaseClient.from('reseller_app_backups').select('payload').eq('user_id',cloudUser.id).eq('backup_date',date).single();
+  if(error||!data?.payload)return toast('That cloud backup could not be loaded.');
+  state=normalizeState(data.payload);state.meta.modifiedAt=new Date().toISOString();saveState();renderActiveScreen(currentScreen);toast('Cloud backup restored and synced.');
+}
+function renderBackup(){
+  const el=document.getElementById('parentBackup'); if(!el) return;
+  const connected=Boolean(cloudUser),lastSync=cloudConfig.lastSyncAt?new Date(cloudConfig.lastSyncAt).toLocaleString():'Not synced yet';
+  el.innerHTML=`
+    <div class="form-card cloud-status-card"><div class="cloud-status-row"><div><h3 style="margin:0 0 5px"><span class="cloud-dot ${connected?'connected':cloudStatus==='syncing'?'syncing':cloudStatus==='error'?'error':''}"></span>${connected?'Family cloud is connected':'Connect family cloud sync'}</h3><div class="cloud-small">${connected?`All signed-in phones share one current copy. Last sync: ${esc(lastSync)}.`:'Connect once on each phone using the same family account.'}</div></div><button class="mini-btn" onclick="openCloudModal()">${connected?'Manage':'Connect'}</button></div>${connected?`<div class="cloud-actions"><button class="primary-btn" onclick="syncCloudNow({showToast:true})">Check & Sync Now</button><button class="secondary-btn" onclick="loadCloudBackups()">View Daily Backups</button></div><div id="cloudBackupList" style="margin-top:8px"></div>`:''}</div>
+    <div class="coach-card ${connected?'':'backup-warning'}"><h3>${connected?'Automatic protection':'Important'}</h3><p>${connected?'Every saved change is sent to the shared cloud, and one restorable snapshot is maintained for each day the app is opened or changed. If a phone is offline, it saves locally and catches up when internet returns.':'Until Cloud Sync is connected, data exists only in this browser. Download a manual backup regularly.'}</p></div>
+    <div class="form-card"><h3>Manual backup and export</h3><button class="primary-btn" onclick="exportBackup()">Download Complete Backup</button><div class="inline-actions"><button class="secondary-btn" onclick="exportCSV('purchases')">Purchases CSV</button><button class="secondary-btn" onclick="exportCSV('sales')">Sales CSV</button><button class="secondary-btn" onclick="exportCSV('trades')">Trades CSV</button><button class="secondary-btn" onclick="exportCSV('expenses')">Expenses CSV</button><button class="secondary-btn" onclick="exportCSV('money')">Money CSV</button></div><div class="hint">Last manual backup: ${state.settings.lastBackup?displayDate(state.settings.lastBackup):'None recorded'}</div></div>
+    <div class="form-card"><h3>Restore a downloaded backup</h3><label class="file-btn">Choose Backup File<input type="file" accept="application/json,.json" onchange="importBackup(event)"></label><div class="hint">Restoring replaces current data and then syncs the restored copy to the family cloud.</div></div>
+    <div class="form-card"><h3>Recommended hosting</h3><p class="hint" style="font-size:12px">Host these app files with GitHub Pages so every phone opens the same web address and can add it to the home screen. GitHub hosts the app code; Supabase securely stores and syncs the business data.</p></div>
+    <div class="form-card" style="border:1px solid #ffd5d5"><h3 style="color:var(--red)">Reset this phone</h3><p class="hint">Download a backup first. When cloud sync is connected, resetting only this phone does not erase the cloud copy unless the blank state is saved afterward.</p><button class="secondary-btn" style="background:#ffe8e8;color:var(--red)" onclick="resetApp()">Erase Local App Data</button></div>`;
+}
+function downloadBlob(content,type,filename){
+  const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportBackup(){
+  state.settings.lastBackup=today(); saveState();
+  downloadBlob(JSON.stringify(state,null,2),'application/json',`${safeName(state.settings.businessName)}_backup_${today()}.json`); toast('Complete backup downloaded.'); renderParent();
+}
+function safeName(s){ return String(s||'reseller').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,''); }
+function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
+function exportCSV(type){
+  let rows=[];
+  if(type==='purchases') rows=[['Entry ID','Item ID','Date','Source Type','Item Name','Category','Variant','Quantity','Cash Cost','Labor Hours','Labor Rate','Labor Value','Tracked Total Cost','Unit Cost','Estimated Value Each','Paid By','Source','Trade ID','Notes'],...state.purchases.map(p=>[p.purchaseId,p.itemId,p.date,p.sourceType||'Purchased',p.name,p.category,p.variant,p.qty,inventoryCashCost(p),p.laborHours||0,p.laborRate||0,p.laborValue||0,p.totalCost,p.unitCost,p.estimatedValueEach||'',p.paidBy,p.source,p.tradeId||'',p.notes])];
+  if(type==='sales') rows=[['Sale ID','Date','Status','Platform','Delivery','Delivery Location','Delivery Fee','Gas Cost','Gas Paid By','Item ID','Item Name','Quantity','Price Each','Item Gross','Fees','Shipping','Packaging','COGS','Item Profit','Order Gross','Order Profit After Gas','Notes'],...state.sales.flatMap(s=>s.lines.map(l=>{const c=computeLine(l),p=getPurchase(l.itemId),sc=computeSale(s);return [s.saleId,s.date,s.status,s.platform,s.delivery?'Yes':'No',s.deliveryLocation||'',s.deliveryFee||0,s.gasCost||0,s.gasPaidBy||'',l.itemId,p?.name||'',l.qty,l.priceEach,c.gross,c.fees,c.shipping,c.packaging,c.cogs,c.profit,sc.gross,sc.profitAfterDelivery,s.notes]}))];
+  if(type==='trades') rows=[['Trade ID','Date','Partner','Direction','Item ID','Item Name','Quantity','Value Each','Total Value','Disposition','Notes'],...state.trades.flatMap(t=>[...(t.giveLines||[]).map(l=>{const p=getPurchase(l.itemId);return [t.tradeId,t.date,t.partner,'Given',l.itemId,p?.name||'',l.qty,l.valueEach,num(l.qty)*num(l.valueEach),'',t.notes]}),...(t.receiveLines||[]).map(l=>[t.tradeId,t.date,t.partner,'Received','',l.name,l.qty,l.valueEach,num(l.qty)*num(l.valueEach),l.disposition,l.notes||t.notes])])];
+  if(type==='expenses') rows=[['Expense ID','Date','Category','Description','Amount','Paid By','Vendor','Linked Sale','Notes'],...state.expenses.map(e=>[e.expenseId,e.date,e.category,e.description,e.amount,e.paidBy,e.vendor,e.linkedSaleId||'',e.notes])];
+  if(type==='money') rows=[['Money ID','Date','Type','Amount','Method','Notes'],...state.money.map(m=>[m.moneyId,m.date,m.type,m.amount,m.method,m.notes])];
+  downloadBlob(rows.map(r=>r.map(csvEscape).join(',')).join('\n'),'text/csv',`${safeName(state.settings.businessName)}_${type}_${today()}.csv`); toast(`${type} CSV downloaded.`);
+}
+
+function importBackup(event){
+  const file=event.target.files?.[0]; if(!file) return;
+  const reader=new FileReader(); reader.onload=()=>{
+    try {
+      const incoming=JSON.parse(reader.result);
+      if(!incoming.settings||!Array.isArray(incoming.purchases)||!Array.isArray(incoming.sales)) throw new Error('Invalid');
+      if(!Array.isArray(incoming.trades)) incoming.trades=[];
+      if(!confirm('Replace all current data with this backup?')) return;
+      state={...clone(DEFAULT_STATE),...incoming,settings:{...clone(DEFAULT_STATE.settings),...incoming.settings},counters:{...clone(DEFAULT_STATE.counters),...(incoming.counters||{})}};
+      saveState(); parentUnlocked=false; toast('Backup restored.'); showScreen('homeScreen');
+    } catch(e){ toast('That file is not a valid backup.'); }
+  }; reader.readAsText(file);
+}
+function resetApp(){
+  const phrase=prompt('Type ERASE to permanently remove all app data.'); if(phrase!=='ERASE') return;
+  localStorage.removeItem(STORAGE_KEY); state=clone(DEFAULT_STATE); parentUnlocked=false; purchaseDraft=[]; createdDraft=[]; tradeGiveDraft=[]; tradeReceiveDraft=[]; saleDraft=[]; expenseDraft={date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''}; editingPurchaseId=''; editingTradeId=''; editingSaleId=''; editingExpenseId=''; editingMoneyId=''; purchaseMeta={date:'',paidBy:'Parent Loan',source:''}; createdMeta={date:'',paidBy:'Parent Loan'}; tradeMeta={date:'',partner:'',notes:''}; saleMeta={date:'',status:'Paid',platform:'Instagram',notes:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'}; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); location.reload();
+}
+
+function finishSetup(){
+  const business=document.getElementById('setupBusiness').value.trim(), daughter=document.getElementById('setupDaughter').value.trim(), parent=document.getElementById('setupParent').value.trim(), pin=document.getElementById('setupPin').value.trim();
+  if(!business) return toast('Enter the business name.'); if(!daughter) return toast('Enter her first name.'); if(!/^\d{4}$/.test(pin)) return toast('Create a 4-digit parent PIN.');
+  Object.assign(state.settings,{businessName:business,daughterName:daughter,parentName:parent||'Parent',pin,startingLoan:num(document.getElementById('setupLoan').value)}); state.setupComplete=true; saveState(); document.getElementById('onboardingModal').classList.remove('show'); renderHome(); toast('Her reseller app is ready! ✨');
+}
+function init(){
+  initNavigationHistory(); renderHeader(); renderHome();
+  if(!state.setupComplete) document.getElementById('onboardingModal').classList.add('show'); else document.getElementById('onboardingModal').classList.remove('show');
+  initCloudSync();
+  if('serviceWorker' in navigator&&location.protocol.startsWith('http')) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>

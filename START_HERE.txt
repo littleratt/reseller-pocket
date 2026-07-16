@@ -1,0 +1,14 @@
+RESELLER POCKET — SIMPLE SETUP ORDER
+
+1. Create the Supabase project.
+2. Run supabase_setup.sql in Supabase SQL Editor.
+3. Copy the Project URL and Publishable key.
+4. Create a public GitHub repository.
+5. Upload every file from this folder to the repository.
+6. Turn on GitHub Pages: Settings > Pages > Deploy from a branch > main > /(root) > Save.
+7. Open the GitHub Pages address.
+8. Tap Cloud Sync and paste the Supabase URL and Publishable key.
+9. Create one family email/password account.
+10. Sign into that same account on all three phones.
+
+Never use or share the Supabase Secret/service_role key.
