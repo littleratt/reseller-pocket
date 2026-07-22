@@ -1,7 +1,7 @@
 {
   "name": "Reseller Pocket",
   "short_name": "Reseller",
-  "description": "A simple family-synced inventory and sales tracker for a teen reseller business.",
+  "description": "A simple family-synced inventory, sales, pricing, and customer quote app for a teen reseller business.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

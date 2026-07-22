@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <title>Reseller Pocket — Inventory Variations & Reports</title>
+  <title>Reseller Pocket — Pricing Quotes, Inventory & Reports</title>
   <style>
     :root {
       --purple:#6d4aff;
@@ -279,6 +279,52 @@
     .ledger-badge.money { background:#eef7ff; color:#245a88; }
     .negative { color:var(--red) !important; }
     .positive { color:var(--green) !important; }
+    .quote .icon { background:#fff2bd; }
+    .quote-targets { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+    .quote-target-btn { border:0; border-radius:14px; padding:12px 8px; background:#f0f1f6; color:var(--muted); font-size:12px; font-weight:900; }
+    .quote-target-btn.active { background:var(--purple); color:white; box-shadow:0 6px 16px rgba(109,74,255,.20); }
+    .quote-private-label { display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:5px 8px; background:#fff0d6; color:#8a5100; font-size:9px; font-weight:900; letter-spacing:.02em; }
+    .quote-suggestion-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:11px; }
+    .quote-suggestion { border:1px solid #e1ddf4; border-radius:13px; padding:9px 5px; background:#faf9ff; text-align:center; color:var(--purple-dark); }
+    button.quote-suggestion { cursor:pointer; }
+    .quote-suggestion span { display:block; color:var(--muted); font-size:9px; font-weight:900; }
+    .quote-suggestion strong { display:block; font-size:12px; margin-top:3px; }
+    .quote-suggestion.selected { border-color:var(--purple); background:var(--lavender); box-shadow:0 0 0 2px rgba(109,74,255,.08); }
+    .quote-line-result { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:10px; }
+    .quote-line-result > div { border-radius:12px; background:#f7f7fb; padding:8px; }
+    .quote-line-result strong { display:block; font-size:12px; }
+    .quote-line-result span { display:block; font-size:9px; color:var(--muted); font-weight:800; margin-top:2px; }
+    .quote-total-card { background:linear-gradient(145deg,#6d4aff,#8e55ff); color:white; border-radius:23px; padding:17px; margin-top:14px; box-shadow:var(--shadow); }
+    .quote-total-card h3 { margin:0 0 12px; }
+    .quote-total-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; }
+    .quote-total-grid > div { border-radius:14px; padding:10px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.15); }
+    .quote-total-grid strong { display:block; font-size:16px; }
+    .quote-total-grid span { display:block; font-size:9px; opacity:.86; margin-top:2px; font-weight:800; }
+    .saved-quotes { display:grid; gap:10px; }
+    .saved-quote-card { background:white; border-radius:19px; padding:14px; box-shadow:0 5px 18px rgba(40,37,78,.07); }
+    .saved-quote-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .saved-quote-card h4 { margin:0; font-size:15px; }
+    .saved-quote-card p { margin:4px 0 0; color:var(--muted); font-size:11px; line-height:1.4; }
+    .saved-quote-total { font-size:16px; font-weight:900; color:var(--purple-dark); white-space:nowrap; }
+    .customer-quote-wrap { max-width:620px; margin:0 auto; }
+    .customer-quote-card { background:white; border-radius:28px; overflow:hidden; box-shadow:0 14px 42px rgba(39,31,92,.15); border:1px solid #ebe8f5; }
+    .customer-quote-head { background:linear-gradient(145deg,#6d4aff,#9a50ff 60%,#ff67a2); color:white; padding:24px 21px; }
+    .customer-quote-head small { display:block; opacity:.88; font-size:10px; font-weight:900; letter-spacing:.12em; }
+    .customer-quote-head h2 { margin:5px 0 0; font-size:25px; line-height:1.15; }
+    .customer-quote-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:15px 19px; background:#faf9ff; border-bottom:1px solid #ebe8f5; }
+    .customer-quote-meta strong { display:block; font-size:12px; }
+    .customer-quote-meta span { display:block; color:var(--muted); font-size:9px; margin-top:2px; font-weight:800; }
+    .customer-quote-lines { padding:8px 19px; }
+    .customer-quote-line { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; padding:14px 0; border-bottom:1px solid #ececf3; }
+    .customer-quote-line:last-child { border-bottom:0; }
+    .customer-quote-line h4 { margin:0; font-size:14px; }
+    .customer-quote-line p { margin:4px 0 0; color:var(--muted); font-size:10px; }
+    .customer-quote-line strong { font-size:14px; white-space:nowrap; }
+    .customer-quote-footer { padding:16px 19px 21px; background:#faf9ff; border-top:1px solid #ebe8f5; }
+    .customer-quote-total { display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:900; }
+    .customer-quote-total strong { font-size:25px; color:var(--purple-dark); }
+    .customer-quote-note { margin-top:12px; color:var(--muted); font-size:11px; line-height:1.5; white-space:pre-wrap; }
+    .quote-view-actions { margin-top:14px; }
     @media (max-width:390px) {
       main { padding:14px; }
       .hero h2 { font-size:25px; }
@@ -288,6 +334,8 @@
       .search-row select { width:100%; }
       .variation-row { grid-template-columns:minmax(0,1fr) 76px 38px; }
       .report-metrics { grid-template-columns:1fr 1fr; }
+      .quote-targets,.quote-suggestion-grid { grid-template-columns:1fr 1fr; }
+      .customer-quote-meta { grid-template-columns:1fr; }
     }
     .sync-pill.cloud { background:#e8f6ee; color:#027a48; }
     .sync-pill.syncing { background:#fff6d8; color:#8a5a00; }
@@ -339,6 +387,8 @@
       <section id="tradeScreen" class="screen"></section>
       <section id="saleScreen" class="screen"></section>
       <section id="expenseScreen" class="screen"></section>
+      <section id="quoteScreen" class="screen"></section>
+      <section id="quoteCustomerScreen" class="screen"></section>
       <section id="inventoryScreen" class="screen"></section>
       <section id="progressScreen" class="screen"></section>
       <section id="ledgerScreen" class="screen"></section>
@@ -391,9 +441,10 @@ const PAID_BY = ['Parent Loan','Business Cash','Gift / Free','Personal'];
 const RECEIVED_DISPOSITIONS = ['Add to inventory for resale','Keep or use — count as non-cash trade value'];
 const MONEY_TYPES = ['Additional Parent Cash Advance','Repayment to Parent','Owner Deposit','Owner Withdrawal'];
 const METHODS = ['Cash','Venmo','Cash App','PayPal','Zelle','Bank Transfer','Other'];
+const QUOTE_TARGETS = [20,30,40];
 
 const DEFAULT_STATE = {
-  version:5,
+  version:6,
   meta:{modifiedAt:''},
   setupComplete:false,
   settings:{
@@ -406,7 +457,8 @@ const DEFAULT_STATE = {
   trades:[],
   expenses:[],
   money:[],
-  counters:{purchase:0,sale:0,trade:0,expense:0,money:0,item:0}
+  quotes:[],
+  counters:{purchase:0,sale:0,trade:0,expense:0,money:0,item:0,quote:0}
 };
 
 let state = loadState();
@@ -421,6 +473,11 @@ let createdMeta = {date:'',paidBy:'Parent Loan'};
 let tradeMeta = {date:'',partner:'',notes:''};
 let saleMeta = {date:'',status:'Paid',platform:'Instagram',notes:'',pricingMode:'line',orderItemTotal:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'};
 let expenseDraft = {date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''};
+let quoteDraft = [];
+let quoteMeta = null;
+let editingQuoteId = '';
+let quotePreview = null;
+let quoteViewingId = '';
 let editingPurchaseId = '';
 let editingTradeId = '';
 let editingSaleId = '';
@@ -470,7 +527,7 @@ function normalizeState(saved){
     })
   }));
   return {
-    ...clone(DEFAULT_STATE), ...source, version:5,
+    ...clone(DEFAULT_STATE), ...source, version:6,
     meta:{...clone(DEFAULT_STATE.meta), ...(source.meta||{})},
     settings:{...clone(DEFAULT_STATE.settings), ...(source.settings||{})},
     counters:{...clone(DEFAULT_STATE.counters), ...(source.counters||{})},
@@ -478,7 +535,8 @@ function normalizeState(saved){
     sales,
     trades:Array.isArray(source.trades)?source.trades:[],
     expenses:Array.isArray(source.expenses)?source.expenses:[],
-    money:Array.isArray(source.money)?source.money:[]
+    money:Array.isArray(source.money)?source.money:[],
+    quotes:(Array.isArray(source.quotes)?source.quotes:[]).map(q=>({...q,lines:(q.lines||[]).map(l=>({...l,id:l.id||stableLocalId('QL'),variant:String(l.variant||''),qty:l.qty??1,costEach:l.costEach??'',priceEach:l.priceEach??'',manualPrice:Boolean(l.manualPrice)}))}))
   };
 }
 function loadState(){
@@ -699,6 +757,8 @@ function renderActiveScreen(id){
   if(id==='inventoryScreen') renderInventory();
   if(id==='progressScreen') renderProgress();
   if(id==='ledgerScreen') renderLedger();
+  if(id==='quoteScreen') renderQuoteScreen();
+  if(id==='quoteCustomerScreen') renderQuoteCustomerScreen();
   if(id==='parentScreen') renderParent();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -764,6 +824,7 @@ function renderHome(){
     <div class="action-grid">
       <button class="action-card sell" onclick="openSaleScreen()"><div class="icon">💰</div><div><strong>I made a sale</strong><small>Cash sale, pickup, shipping, or delivery</small></div></button>
       <button class="action-card buy" onclick="openPurchaseScreen()"><div class="icon">🛍️</div><div><strong>I bought inventory</strong><small>Single items or a bulk purchase</small></div></button>
+      <button class="action-card quote" onclick="openQuoteScreen()"><div class="icon">🧮</div><div><strong>Price a possible buy</strong><small>Compare profit targets and make a customer quote</small></div></button>
       <button class="action-card create" onclick="openCreatedScreen()"><div class="icon">🌸</div><div><strong>I made something</strong><small>Track materials, time, and value</small></div></button>
       <button class="action-card trade" onclick="openTradeScreen()"><div class="icon">🔄</div><div><strong>I made a trade</strong><small>What she gave and received</small></div></button>
       <button class="action-card inventory" onclick="showScreen('inventoryScreen')"><div class="icon">📦</div><div><strong>See my inventory</strong><small>Products grouped with sizes and styles</small></div></button>
@@ -775,6 +836,129 @@ function renderHome(){
     <div class="coach-card"><h3>🌟 Business Coach</h3><p>${esc(coachMessage(t))}</p></div>
     ${backup}
   `;
+}
+
+
+function newQuoteMeta(){
+  return {
+    date:today(), customer:'', title:'', targetChoice:'30', customMargin:'',
+    feePercent:String(state.settings.defaultFeePercent??15), fixedFee:String(state.settings.defaultFixedFee??0),
+    shipping:String(state.settings.defaultShipping??0), packaging:String(state.settings.defaultPackaging??0), notes:''
+  };
+}
+function newQuoteLine(){ return {id:stableLocalId('QL'),name:'',variant:'',qty:1,costEach:'',priceEach:'',manualPrice:false}; }
+function selectedQuoteMargin(meta=quoteMeta){ return meta?.targetChoice==='custom'?num(meta.customMargin):num(meta?.targetChoice||30); }
+function friendlyQuotePrice(raw){
+  raw=num(raw); if(raw<=0)return 0;
+  const ninetyNine=Math.ceil(raw)-0.01;
+  return round2(ninetyNine+0.000001>=raw?ninetyNine:Math.ceil(raw*100-0.000001)/100);
+}
+function quotePriceForMargin(costEach,marginPct,meta=quoteMeta){
+  const fee=num(meta?.feePercent)/100,margin=num(marginPct)/100,denominator=1-fee-margin;
+  const base=num(costEach)+num(meta?.fixedFee)+num(meta?.shipping)+num(meta?.packaging);
+  if(base<=0||denominator<=0)return 0;
+  return friendlyQuotePrice(base/denominator);
+}
+function quoteChargeEach(line,meta=quoteMeta){
+  return line?.manualPrice&&String(line.priceEach??'').trim()!==''?num(line.priceEach):quotePriceForMargin(line?.costEach,selectedQuoteMargin(meta),meta);
+}
+function quoteLineMetrics(line,meta=quoteMeta){
+  const qty=num(line?.qty),cost=qty*num(line?.costEach),priceEach=quoteChargeEach(line,meta),gross=qty*priceEach;
+  const sellingCosts=gross*num(meta?.feePercent)/100+qty*(num(meta?.fixedFee)+num(meta?.shipping)+num(meta?.packaging));
+  const profit=gross-sellingCosts-cost;
+  return {qty,cost,priceEach,gross,sellingCosts,profit,margin:gross?profit/gross*100:0};
+}
+function quoteTotals(lines=quoteDraft,meta=quoteMeta){
+  const parts=(lines||[]).map(l=>quoteLineMetrics(l,meta));
+  const investment=parts.reduce((a,x)=>a+x.cost,0),customerTotal=parts.reduce((a,x)=>a+x.gross,0),profit=parts.reduce((a,x)=>a+x.profit,0);
+  return {investment,customerTotal,profit,margin:customerTotal?profit/customerTotal*100:0,units:parts.reduce((a,x)=>a+x.qty,0)};
+}
+function quoteMarginValid(meta=quoteMeta){ const margin=selectedQuoteMargin(meta),fee=num(meta?.feePercent);return margin>=0&&margin<100&&fee>=0&&fee<100&&margin+fee<100; }
+function openQuoteScreen(quoteId=''){
+  if(quoteId)return editQuote(quoteId);
+  if(!quoteMeta)quoteMeta=newQuoteMeta();
+  if(!quoteDraft.length)quoteDraft=[newQuoteLine()];
+  quotePreview=null;quoteViewingId='';renderQuoteScreen();showScreen('quoteScreen');
+}
+function startNewQuote(){
+  editingQuoteId='';quoteMeta=newQuoteMeta();quoteDraft=[newQuoteLine()];quotePreview=null;quoteViewingId='';renderQuoteScreen();showScreen('quoteScreen');
+}
+function setQuoteTarget(choice){
+  quoteMeta.targetChoice=String(choice);
+  if(choice!=='custom')quoteMeta.customMargin='';
+  renderQuoteScreen();
+}
+function updateQuoteMeta(field,value){ quoteMeta[field]=value; updateAllQuoteCalculations(); }
+function updateQuoteLine(index,field,value){
+  const line=quoteDraft[index];if(!line)return;line[field]=value;
+  if(field==='costEach'||field==='qty')updateQuoteLinePreview(index);
+}
+function updateQuoteCharge(index,value){ const line=quoteDraft[index];if(!line)return;line.priceEach=value;line.manualPrice=true;updateQuoteLinePreview(index); }
+function useQuoteSuggestion(index,margin){ const line=quoteDraft[index];if(!line)return;line.priceEach=String(quotePriceForMargin(line.costEach,margin));line.manualPrice=true;renderQuoteLines();updateQuoteTotalsDisplay(); }
+function resetQuoteLinePrice(index){ const line=quoteDraft[index];if(!line)return;line.priceEach='';line.manualPrice=false;renderQuoteLines();updateQuoteTotalsDisplay(); }
+function addQuoteLine(){ quoteDraft.push(newQuoteLine());renderQuoteLines();updateQuoteTotalsDisplay(); }
+function removeQuoteLine(index){ if(quoteDraft.length===1)return toast('A quote needs at least one item.');quoteDraft.splice(index,1);renderQuoteLines();updateQuoteTotalsDisplay(); }
+function renderQuoteScreen(){
+  if(!quoteMeta)quoteMeta=newQuoteMeta();if(!quoteDraft.length)quoteDraft=[newQuoteLine()];
+  const editing=Boolean(editingQuoteId),margin=selectedQuoteMargin();
+  document.getElementById('quoteScreen').innerHTML=`
+    <div class="back-row"><button class="back-btn" onclick="appBack()">←</button><div class="screen-heading"><h2>${editing?'Edit saved quote':'Price a possible purchase'}</h2><p>Compare profit margins, decide what is worth buying, and make a customer-ready quote.</p></div></div>
+    <div class="form-card"><div class="two-col"><div class="field"><label>Customer name or @handle</label><input id="quoteCustomer" value="${esc(quoteMeta.customer||'')}" placeholder="Example: @customer" oninput="quoteMeta.customer=this.value"></div><div class="field"><label>Quote date</label><input id="quoteDate" type="date" value="${esc(quoteMeta.date||today())}" onchange="quoteMeta.date=this.value"></div></div><div class="field"><label>Quote title <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input id="quoteTitle" value="${esc(quoteMeta.title||'')}" placeholder="Example: Back-to-school order" oninput="quoteMeta.title=this.value"></div></div>
+    <div class="form-card"><h3>Choose the profit target</h3><div class="hint">These are profit margins after expected item cost, selling fees, shipping, and packaging—not simple markups.</div><div class="quote-targets">${QUOTE_TARGETS.map(x=>`<button type="button" class="quote-target-btn ${String(quoteMeta.targetChoice)===String(x)?'active':''}" onclick="setQuoteTarget('${x}')">${x}%</button>`).join('')}<button type="button" class="quote-target-btn ${quoteMeta.targetChoice==='custom'?'active':''}" onclick="setQuoteTarget('custom')">Custom</button></div>${quoteMeta.targetChoice==='custom'?`<div class="field" style="margin-top:12px"><label>Custom profit margin %</label><input id="quoteCustomMargin" type="text" inputmode="decimal" value="${esc(quoteMeta.customMargin)}" placeholder="Example: 35" oninput="updateQuoteMeta('customMargin',this.value)"></div>`:''}<div class="price-tip">Current target: <span id="quoteTargetLabel">${pct(margin)}</span> profit margin</div><details><summary>Pricing assumptions</summary><div class="hint" style="margin:8px 0 10px">Defaults come from Parent Settings and can be changed for this quote only.</div><div class="two-col"><div class="field"><label>Selling fee %</label><input type="text" inputmode="decimal" value="${esc(quoteMeta.feePercent)}" oninput="updateQuoteMeta('feePercent',this.value)"></div><div class="field"><label>Fixed fee per item</label><input type="text" inputmode="decimal" value="${esc(quoteMeta.fixedFee)}" oninput="updateQuoteMeta('fixedFee',this.value)"></div><div class="field"><label>Seller-paid shipping per item</label><input type="text" inputmode="decimal" value="${esc(quoteMeta.shipping)}" oninput="updateQuoteMeta('shipping',this.value)"></div><div class="field"><label>Packaging per item</label><input type="text" inputmode="decimal" value="${esc(quoteMeta.packaging)}" oninput="updateQuoteMeta('packaging',this.value)"></div></div></details></div>
+    <div class="section-title"><h3>Possible items</h3><span>${quoteDraft.length} line${quoteDraft.length===1?'':'s'}</span></div><div id="quoteLines"></div><button class="add-line-btn" onclick="addQuoteLine()">＋ Add another possible item</button>
+    <div class="quote-total-card"><h3>Decision summary <span class="quote-private-label">🔒 PRIVATE</span></h3><div class="quote-total-grid"><div><strong id="quoteInvestment">$0.00</strong><span>POTENTIAL INVESTMENT</span></div><div><strong id="quoteCustomerTotal">$0.00</strong><span>CUSTOMER QUOTE TOTAL</span></div><div><strong id="quoteExpectedProfit">$0.00</strong><span>EXPECTED PROFIT</span></div><div><strong id="quoteActualMargin">0.0%</strong><span>EXPECTED MARGIN</span></div></div><div id="quoteDecisionNote" style="font-size:11px;line-height:1.45;margin-top:12px;opacity:.94"></div></div>
+    <div class="form-card"><div class="field"><label>Customer-facing note <span style="font-weight:500;color:var(--muted)">(optional)</span></label><textarea id="quoteNotes" placeholder="Example: Prices are valid for 48 hours and depend on item availability." oninput="quoteMeta.notes=this.value">${esc(quoteMeta.notes||'')}</textarea></div></div>
+    <button class="primary-btn" onclick="saveQuote()">${editing?'Update Saved Quote ✓':'Save Quote 💾'}</button><button class="secondary-btn" onclick="previewCurrentQuote()">Preview Customer Quote 👀</button>${editing?'<button class="secondary-btn" onclick="startNewQuote()">Start a New Quote</button>':''}
+    <div class="section-title"><h3>Saved quotes</h3><span>${state.quotes.length}</span></div><div id="savedQuotes" class="saved-quotes"></div>`;
+  renderQuoteLines();updateQuoteTotalsDisplay();renderSavedQuotes();
+}
+function renderQuoteLines(){
+  const box=document.getElementById('quoteLines');if(!box)return;const selected=selectedQuoteMargin();
+  box.innerHTML=quoteDraft.map((line,i)=>{const c=quoteLineMetrics(line),charge=quoteChargeEach(line);return `<div class="line-card"><div class="line-card-head"><strong>Item ${i+1}</strong>${quoteDraft.length>1?`<button class="mini-btn danger-btn" onclick="removeQuoteLine(${i})">Remove</button>`:''}</div><div class="field"><label>Item name</label><input value="${esc(line.name)}" placeholder="Example: Graphic tee" oninput="updateQuoteLine(${i},'name',this.value)"></div><div class="two-col"><div class="field"><label>Size / style <span style="font-weight:500;color:var(--muted)">(optional)</span></label><input value="${esc(line.variant||'')}" placeholder="Medium, pink, style A..." oninput="updateQuoteLine(${i},'variant',this.value)"></div><div class="field"><label>Quantity</label><input type="text" inputmode="numeric" value="${esc(line.qty)}" oninput="updateQuoteLine(${i},'qty',this.value)"></div></div><div class="field"><label>Expected purchase cost each <span class="quote-private-label">🔒 PRIVATE</span></label><input type="text" inputmode="decimal" value="${esc(line.costEach)}" placeholder="0.00" oninput="updateQuoteLine(${i},'costEach',this.value)"></div><label style="margin-top:4px">Suggested charge each</label><div class="quote-suggestion-grid">${QUOTE_TARGETS.map(m=>`<button type="button" id="quoteSuggestion-${i}-${m}" class="quote-suggestion ${!line.manualPrice&&selected===m?'selected':''}" onclick="useQuoteSuggestion(${i},${m})"><span>${m}% margin</span><strong>${money(quotePriceForMargin(line.costEach,m))}</strong></button>`).join('')}<button type="button" id="quoteSuggestion-${i}-custom" class="quote-suggestion ${!line.manualPrice&&quoteMeta.targetChoice==='custom'?'selected':''}" onclick="${quoteMeta.targetChoice==='custom'?`useQuoteSuggestion(${i},selectedQuoteMargin())`:`setQuoteTarget('custom')`}"><span>${quoteMeta.targetChoice==='custom'?pct(selected):'Custom'}</span><strong>${quoteMeta.targetChoice==='custom'?money(quotePriceForMargin(line.costEach,selected)):'Set %'}</strong></button></div><div class="field" style="margin-top:12px"><label>Charge customer each</label><input id="quoteCharge-${i}" type="text" inputmode="decimal" value="${esc(charge||'')}" placeholder="0.00" oninput="updateQuoteCharge(${i},this.value)"><div class="hint">${line.manualPrice?`Custom line price is being used. <button type="button" class="mini-btn" style="padding:5px 8px;margin-left:4px" onclick="resetQuoteLinePrice(${i})">Use ${pct(selected)} suggestion</button>`:`Automatically using the ${pct(selected)} recommendation.`}</div></div><div class="quote-line-result"><div><strong id="quoteLineTotal-${i}">${money(c.gross)}</strong><span>LINE TOTAL</span></div><div><strong id="quoteLineProfit-${i}">${money(c.profit)}</strong><span>EXPECTED PROFIT</span></div><div><strong id="quoteLineMargin-${i}">${pct(c.margin)}</strong><span>ACTUAL MARGIN</span></div></div></div>`;}).join('');
+}
+function updateQuoteLinePreview(i){
+  const line=quoteDraft[i];if(!line)return;QUOTE_TARGETS.forEach(m=>{const el=document.getElementById(`quoteSuggestion-${i}-${m}`)?.querySelector('strong');if(el)el.textContent=money(quotePriceForMargin(line.costEach,m));});
+  const custom=document.getElementById(`quoteSuggestion-${i}-custom`)?.querySelector('strong');if(custom)custom.textContent=quoteMeta.targetChoice==='custom'?money(quotePriceForMargin(line.costEach,selectedQuoteMargin())):'Set %';
+  const input=document.getElementById(`quoteCharge-${i}`);if(input&&!line.manualPrice)input.value=quoteChargeEach(line)||'';
+  const c=quoteLineMetrics(line);const total=document.getElementById(`quoteLineTotal-${i}`),profit=document.getElementById(`quoteLineProfit-${i}`),margin=document.getElementById(`quoteLineMargin-${i}`);if(total)total.textContent=money(c.gross);if(profit)profit.textContent=money(c.profit);if(margin)margin.textContent=pct(c.margin);updateQuoteTotalsDisplay();
+}
+function updateAllQuoteCalculations(){ quoteDraft.forEach((_,i)=>updateQuoteLinePreview(i));const target=document.getElementById('quoteTargetLabel');if(target)target.textContent=pct(selectedQuoteMargin());updateQuoteTotalsDisplay(); }
+function updateQuoteTotalsDisplay(){
+  const t=quoteTotals(),map={quoteInvestment:money(t.investment),quoteCustomerTotal:money(t.customerTotal),quoteExpectedProfit:money(t.profit),quoteActualMargin:pct(t.margin)};Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  const note=document.getElementById('quoteDecisionNote');if(note){if(!quoteMarginValid())note.textContent='The profit target plus selling fee must stay below 100%. Adjust the custom target or fee.';else if(!quoteDraft.some(l=>num(l.costEach)>0))note.textContent='Enter expected costs to compare the purchase and pricing options.';else if(t.profit<0)note.textContent='This price would lose money after the estimated costs. Raise the customer price or lower the purchase cost.';else if(t.margin+0.05<selectedQuoteMargin())note.textContent='One or more line prices were manually lowered, so the overall margin is below the selected target.';else note.textContent=`At the current prices, ${t.units} unit${t.units===1?'':'s'} would require ${money(t.investment)} and are expected to earn about ${money(t.profit)}.`;}
+}
+function buildQuoteRecord({preview=false}={}){
+  if(!quoteMarginValid())return toast('The profit target plus selling fee must be less than 100%.');
+  if(!quoteDraft.length)return toast('Add at least one item.');
+  for(let i=0;i<quoteDraft.length;i++){const l=quoteDraft[i];if(!String(l.name||'').trim())return toast(`Enter a name for item ${i+1}.`);if(num(l.qty)<=0)return toast(`Enter a quantity for ${l.name}.`);if(num(l.costEach)<0)return toast(`Enter a valid cost for ${l.name}.`);if(quoteChargeEach(l)<=0)return toast(`Enter a customer price for ${l.name}.`);}
+  const existing=state.quotes.find(q=>q.quoteId===editingQuoteId),quoteId=preview?(editingQuoteId||'PREVIEW'):(editingQuoteId||nextId('quote','Q'));
+  return {quoteId,date:quoteMeta.date||today(),customer:String(quoteMeta.customer||'').trim(),title:String(quoteMeta.title||'').trim(),targetChoice:String(quoteMeta.targetChoice||'30'),customMargin:quoteMeta.customMargin??'',feePercent:quoteMeta.feePercent??'',fixedFee:quoteMeta.fixedFee??'',shipping:quoteMeta.shipping??'',packaging:quoteMeta.packaging??'',notes:String(quoteMeta.notes||'').trim(),lines:quoteDraft.map(l=>({...clone(l),name:String(l.name||'').trim(),variant:String(l.variant||'').trim(),qty:num(l.qty),costEach:num(l.costEach),priceEach:quoteChargeEach(l),manualPrice:Boolean(l.manualPrice)})),createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+}
+function saveQuote(){
+  const record=buildQuoteRecord();if(!record)return;
+  state.quotes=state.quotes.filter(q=>q.quoteId!==record.quoteId);state.quotes.push(record);editingQuoteId=record.quoteId;quoteMeta={date:record.date,customer:record.customer,title:record.title,targetChoice:record.targetChoice,customMargin:record.customMargin,feePercent:record.feePercent,fixedFee:record.fixedFee,shipping:record.shipping,packaging:record.packaging,notes:record.notes};quoteDraft=record.lines.map(clone);saveState();toast(`Quote ${record.quoteId} saved and synced.`);renderQuoteScreen();
+}
+function previewCurrentQuote(){ const record=buildQuoteRecord({preview:true});if(!record)return;quotePreview=record;quoteViewingId='';renderQuoteCustomerScreen();showScreen('quoteCustomerScreen'); }
+function editQuote(id){ const q=state.quotes.find(x=>x.quoteId===id);if(!q)return toast('That saved quote could not be found.');editingQuoteId=id;quotePreview=null;quoteViewingId='';quoteMeta={date:q.date||today(),customer:q.customer||'',title:q.title||'',targetChoice:String(q.targetChoice||'30'),customMargin:q.customMargin??'',feePercent:q.feePercent??state.settings.defaultFeePercent,fixedFee:q.fixedFee??state.settings.defaultFixedFee,shipping:q.shipping??state.settings.defaultShipping,packaging:q.packaging??state.settings.defaultPackaging,notes:q.notes||''};quoteDraft=(q.lines||[]).map(l=>({...clone(l),id:l.id||stableLocalId('QL')}));renderQuoteScreen();showScreen('quoteScreen'); }
+function duplicateQuote(id){ const q=state.quotes.find(x=>x.quoteId===id);if(!q)return;editingQuoteId='';quoteMeta={date:today(),customer:q.customer||'',title:q.title?`${q.title} copy`:'',targetChoice:String(q.targetChoice||'30'),customMargin:q.customMargin??'',feePercent:q.feePercent??state.settings.defaultFeePercent,fixedFee:q.fixedFee??state.settings.defaultFixedFee,shipping:q.shipping??state.settings.defaultShipping,packaging:q.packaging??state.settings.defaultPackaging,notes:q.notes||''};quoteDraft=(q.lines||[]).map(l=>({...clone(l),id:stableLocalId('QL')}));renderQuoteScreen();showScreen('quoteScreen');toast('Quote copied. Save it when ready.'); }
+function deleteQuote(id){ if(!confirm('Delete this saved quote? Inventory, sales, and other records will not be affected.'))return;state.quotes=state.quotes.filter(q=>q.quoteId!==id);saveState();if(editingQuoteId===id)startNewQuote();else renderSavedQuotes();toast('Quote deleted.'); }
+function viewSavedQuote(id){ quotePreview=null;quoteViewingId=id;renderQuoteCustomerScreen();showScreen('quoteCustomerScreen'); }
+function renderSavedQuotes(){
+  const box=document.getElementById('savedQuotes');if(!box)return;const list=[...state.quotes].sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+  box.innerHTML=list.length?list.map(q=>{const t=quoteTotals(q.lines,q),who=q.customer||'No customer added';return `<div class="saved-quote-card"><div class="saved-quote-top"><div><h4>${esc(q.title||who)}</h4><p>${esc(q.quoteId)} · ${esc(who)} · ${displayDate(q.date)} · ${q.lines.length} item line${q.lines.length===1?'':'s'}</p></div><div class="saved-quote-total">${money(t.customerTotal)}</div></div><div class="record-actions"><button class="mini-btn" onclick="editQuote('${esc(q.quoteId)}')">Edit</button><button class="mini-btn" onclick="viewSavedQuote('${esc(q.quoteId)}')">Customer View</button><button class="mini-btn" onclick="duplicateQuote('${esc(q.quoteId)}')">Copy</button><button class="mini-btn danger-btn" onclick="deleteQuote('${esc(q.quoteId)}')">Delete</button></div></div>`;}).join(''):'<div class="empty"><div class="big">🧮</div><h3>No saved quotes yet</h3><p>Build a possible purchase above, then save it for later.</p></div>';
+}
+function currentCustomerQuote(){ return quotePreview||state.quotes.find(q=>q.quoteId===quoteViewingId)||null; }
+function renderQuoteCustomerScreen(){
+  const q=currentCustomerQuote();const el=document.getElementById('quoteCustomerScreen');if(!q){el.innerHTML='<div class="empty"><div class="big">🧾</div><h3>No quote selected</h3><button class="secondary-btn" onclick="openQuoteScreen()">Open quotes</button></div>';return;}
+  const t=quoteTotals(q.lines,q),who=q.customer||'Customer';
+  el.innerHTML=`<div class="customer-quote-wrap"><div class="back-row"><button class="back-btn" onclick="appBack()">←</button><div class="screen-heading"><h2>Customer quote</h2><p>This view and the image contain prices only—never her costs or profit.</p></div></div><div id="customerQuoteCard" class="customer-quote-card"><div class="customer-quote-head"><small>CUSTOMER QUOTE</small><h2>${esc(state.settings.businessName||'Reseller Pocket')}</h2>${q.title?`<div style="margin-top:8px;opacity:.92">${esc(q.title)}</div>`:''}</div><div class="customer-quote-meta"><div><strong>${esc(who)}</strong><span>PREPARED FOR</span></div><div><strong>${displayDate(q.date)}</strong><span>${q.quoteId==='PREVIEW'?'PREVIEW':esc(q.quoteId)}</span></div></div><div class="customer-quote-lines">${q.lines.map(l=>{const m=quoteLineMetrics(l,q),detail=[l.variant?String(l.variant):'',`${num(l.qty)} × ${money(m.priceEach)}`].filter(Boolean).join(' · ');return `<div class="customer-quote-line"><div><h4>${esc(l.name)}</h4><p>${esc(detail)}</p></div><strong>${money(m.gross)}</strong></div>`;}).join('')}</div><div class="customer-quote-footer"><div class="customer-quote-total"><span>Total</span><strong>${money(t.customerTotal)}</strong></div>${q.notes?`<div class="customer-quote-note">${esc(q.notes)}</div>`:''}</div></div><div class="quote-view-actions"><button class="primary-btn" onclick="shareQuoteImage()">Save / Share Quote Image 📱</button><button class="secondary-btn" onclick="appBack()">Back to Quotes</button></div></div>`;
+}
+function canvasRoundRect(ctx,x,y,w,h,r){ctx.beginPath();if(typeof ctx.roundRect==='function')ctx.roundRect(x,y,w,h,r);else{ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);}ctx.fill();}
+function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=4){
+  const words=String(text||'').split(/\s+/),lines=[];let line='';for(const word of words){const test=line?`${line} ${word}`:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word;if(lines.length>=maxLines-1)break;}else line=test;}if(line&&lines.length<maxLines)lines.push(line);lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return lines.length*lineHeight;
+}
+async function shareQuoteImage(){
+  const q=currentCustomerQuote();if(!q)return;const t=quoteTotals(q.lines,q),width=1080,rowHeight=130,titleSpace=q.title?58:0,height=430+titleSpace+q.lines.length*rowHeight+(q.notes?150:70);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#f7f7fb';ctx.fillRect(0,0,width,height);ctx.fillStyle='#6d4aff';canvasRoundRect(ctx,50,45,width-100,220,34);ctx.fillStyle='#ffffff';ctx.font='900 34px system-ui, sans-serif';ctx.fillText('CUSTOMER QUOTE',90,105);ctx.font='900 54px system-ui, sans-serif';wrapCanvasText(ctx,state.settings.businessName||'Reseller Pocket',90,175,width-180,62,2);ctx.font='700 25px system-ui, sans-serif';ctx.fillStyle='#4d31c7';ctx.fillText(`Prepared for: ${q.customer||'Customer'}`,75,320);ctx.fillStyle='#6f7282';ctx.font='700 22px system-ui, sans-serif';ctx.fillText(`${displayDate(q.date)}  •  ${q.quoteId==='PREVIEW'?'PREVIEW':q.quoteId}`,75,358);let y=405;if(q.title){ctx.font='800 25px system-ui, sans-serif';ctx.fillStyle='#202338';wrapCanvasText(ctx,q.title,75,y,width-150,30,2);y+=58;}ctx.fillStyle='#202338';q.lines.forEach(l=>{const m=quoteLineMetrics(l,q);ctx.font='800 28px system-ui, sans-serif';ctx.fillStyle='#202338';wrapCanvasText(ctx,l.name,75,y,width-340,34,2);ctx.font='600 21px system-ui, sans-serif';ctx.fillStyle='#6f7282';const detail=[l.variant?String(l.variant):'',`${num(l.qty)} × ${money(m.priceEach)}`].filter(Boolean).join('  •  ');ctx.fillText(detail,75,y+72);ctx.font='900 30px system-ui, sans-serif';ctx.fillStyle='#4d31c7';ctx.textAlign='right';ctx.fillText(money(m.gross),width-75,y+36);ctx.textAlign='left';ctx.strokeStyle='#e4e6ee';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(75,y+105);ctx.lineTo(width-75,y+105);ctx.stroke();y+=rowHeight;});ctx.fillStyle='#4d31c7';ctx.font='900 34px system-ui, sans-serif';ctx.fillText('TOTAL',75,y+40);ctx.textAlign='right';ctx.font='900 50px system-ui, sans-serif';ctx.fillText(money(t.customerTotal),width-75,y+42);ctx.textAlign='left';if(q.notes){ctx.font='600 21px system-ui, sans-serif';ctx.fillStyle='#6f7282';wrapCanvasText(ctx,q.notes,75,y+95,width-150,30,4);}const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png',0.95));if(!blob)return toast('The quote image could not be created.');const filename=`${safeName(state.settings.businessName)}_${safeName(q.customer||q.quoteId)}_quote.png`;const file=new File([blob],filename,{type:'image/png'});try{if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:`Quote from ${state.settings.businessName}`});}else{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Customer quote image saved.');}}catch(e){if(e?.name!=='AbortError')toast('The image was created, but sharing was canceled or unavailable.');}
 }
 
 function openPurchaseScreen(){
@@ -1435,7 +1619,7 @@ function renderBackup(){
   el.innerHTML=`
     <div class="form-card cloud-status-card"><div class="cloud-status-row"><div><h3 style="margin:0 0 5px"><span class="cloud-dot ${connected?'connected':cloudStatus==='syncing'?'syncing':cloudStatus==='error'?'error':''}"></span>${connected?'Family cloud is connected':'Connect family cloud sync'}</h3><div class="cloud-small">${connected?`All signed-in phones share one current copy. Last sync: ${esc(lastSync)}.`:'Connect once on each phone using the same family account.'}</div></div><button class="mini-btn" onclick="openCloudModal()">${connected?'Manage':'Connect'}</button></div>${connected?`<div class="cloud-actions"><button class="primary-btn" onclick="syncCloudNow({showToast:true})">Check & Sync Now</button><button class="secondary-btn" onclick="loadCloudBackups()">View Daily Backups</button></div><div id="cloudBackupList" style="margin-top:8px"></div>`:''}</div>
     <div class="coach-card ${connected?'':'backup-warning'}"><h3>${connected?'Automatic protection':'Important'}</h3><p>${connected?'Every saved change is sent to the shared cloud, and one restorable snapshot is maintained for each day the app is opened or changed. If a phone is offline, it saves locally and catches up when internet returns.':'Until Cloud Sync is connected, data exists only in this browser. Download a manual backup regularly.'}</p></div>
-    <div class="form-card"><h3>Manual backup and export</h3><button class="primary-btn" onclick="exportBackup()">Download Complete Backup</button><div class="inline-actions"><button class="secondary-btn" onclick="exportCSV('purchases')">Purchases CSV</button><button class="secondary-btn" onclick="exportCSV('sales')">Sales CSV</button><button class="secondary-btn" onclick="exportCSV('trades')">Trades CSV</button><button class="secondary-btn" onclick="exportCSV('expenses')">Expenses CSV</button><button class="secondary-btn" onclick="exportCSV('money')">Money CSV</button><button class="secondary-btn" onclick="exportCSV('ledger')">Ledger CSV</button></div><div class="hint">Last manual backup: ${state.settings.lastBackup?displayDate(state.settings.lastBackup):'None recorded'}</div></div>
+    <div class="form-card"><h3>Manual backup and export</h3><button class="primary-btn" onclick="exportBackup()">Download Complete Backup</button><div class="inline-actions"><button class="secondary-btn" onclick="exportCSV('purchases')">Purchases CSV</button><button class="secondary-btn" onclick="exportCSV('sales')">Sales CSV</button><button class="secondary-btn" onclick="exportCSV('trades')">Trades CSV</button><button class="secondary-btn" onclick="exportCSV('expenses')">Expenses CSV</button><button class="secondary-btn" onclick="exportCSV('money')">Money CSV</button><button class="secondary-btn" onclick="exportCSV('quotes')">Quotes CSV</button><button class="secondary-btn" onclick="exportCSV('ledger')">Ledger CSV</button></div><div class="hint">Last manual backup: ${state.settings.lastBackup?displayDate(state.settings.lastBackup):'None recorded'}</div></div>
     <div class="form-card"><h3>Restore a downloaded backup</h3><label class="file-btn">Choose Backup File<input type="file" accept="application/json,.json" onchange="importBackup(event)"></label><div class="hint">Restoring replaces current data and then syncs the restored copy to the family cloud.</div></div>
     <div class="form-card"><h3>Recommended hosting</h3><p class="hint" style="font-size:12px">Host these app files with GitHub Pages so every phone opens the same web address and can add it to the home screen. GitHub hosts the app code; Supabase securely stores and syncs the business data.</p></div>
     <div class="form-card" style="border:1px solid #ffd5d5"><h3 style="color:var(--red)">Reset this phone</h3><p class="hint">Download a backup first. When cloud sync is connected, resetting only this phone does not erase the cloud copy unless the blank state is saved afterward.</p><button class="secondary-btn" style="background:#ffe8e8;color:var(--red)" onclick="resetApp()">Erase Local App Data</button></div>`;
@@ -1456,6 +1640,7 @@ function exportCSV(type){
   if(type==='trades') rows=[['Trade ID','Date','Partner','Direction','Item ID','Item Name','Quantity','Value Each','Total Value','Disposition','Notes'],...state.trades.flatMap(t=>[...(t.giveLines||[]).map(l=>{const p=getPurchase(l.itemId);return [t.tradeId,t.date,t.partner,'Given',l.itemId,p?.name||'',l.qty,l.valueEach,num(l.qty)*num(l.valueEach),'',t.notes]}),...(t.receiveLines||[]).map(l=>[t.tradeId,t.date,t.partner,'Received','',l.name,l.qty,l.valueEach,num(l.qty)*num(l.valueEach),l.disposition,l.notes||t.notes])])];
   if(type==='expenses') rows=[['Expense ID','Date','Category','Description','Amount','Paid By','Vendor','Linked Sale','Notes'],...state.expenses.map(e=>[e.expenseId,e.date,e.category,e.description,e.amount,e.paidBy,e.vendor,e.linkedSaleId||'',e.notes])];
   if(type==='money') rows=[['Money ID','Date','Type','Amount','Method','Notes'],...state.money.map(m=>[m.moneyId,m.date,m.type,m.amount,m.method,m.notes])];
+  if(type==='quotes') rows=[['Quote ID','Date','Customer / Handle','Title','Item','Variation','Quantity','Expected Cost Each','Customer Price Each','Line Total','Expected Profit','Expected Margin %','Selected Target','Notes'],...state.quotes.flatMap(q=>(q.lines||[]).map(l=>{const m=quoteLineMetrics(l,q);return [q.quoteId,q.date,q.customer,q.title,l.name,l.variant,l.qty,l.costEach,m.priceEach,m.gross,m.profit,m.margin,q.targetChoice==='custom'?q.customMargin:q.targetChoice,q.notes]}))];
   if(type==='ledger') rows=[['Date','Type','Transaction ID','Description','Details','Amount','Direction'],...transactionLedger().map(r=>[r.date,r.badge,r.id,r.title,r.detail,r.amount,r.sign<0?'Out':r.sign>0?'In':'Non-cash'])];
   downloadBlob(rows.map(r=>r.map(csvEscape).join(',')).join('\n'),'text/csv',`${safeName(state.settings.businessName)}_${type}_${today()}.csv`); toast(`${type} CSV downloaded.`);
 }
@@ -1475,7 +1660,7 @@ function importBackup(event){
 }
 function resetApp(){
   const phrase=prompt('Type ERASE to permanently remove all app data.'); if(phrase!=='ERASE') return;
-  localStorage.removeItem(STORAGE_KEY); state=clone(DEFAULT_STATE); parentUnlocked=false; purchaseDraft=[]; createdDraft=[]; tradeGiveDraft=[]; tradeReceiveDraft=[]; saleDraft=[]; expenseDraft={date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''}; editingPurchaseId=''; editingTradeId=''; editingSaleId=''; editingExpenseId=''; editingMoneyId=''; purchaseMeta={date:'',paidBy:'Parent Loan',source:''}; createdMeta={date:'',paidBy:'Parent Loan'}; tradeMeta={date:'',partner:'',notes:''}; saleMeta={date:'',status:'Paid',platform:'Instagram',notes:'',pricingMode:'line',orderItemTotal:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'}; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); location.reload();
+  localStorage.removeItem(STORAGE_KEY); state=clone(DEFAULT_STATE); parentUnlocked=false; purchaseDraft=[]; createdDraft=[]; tradeGiveDraft=[]; tradeReceiveDraft=[]; saleDraft=[]; quoteDraft=[]; quoteMeta=null; quotePreview=null; quoteViewingId=''; expenseDraft={date:'',category:'Packaging',description:'',amount:'',paidBy:'Business Cash',vendor:'',notes:''}; editingPurchaseId=''; editingTradeId=''; editingSaleId=''; editingExpenseId=''; editingMoneyId=''; editingQuoteId=''; purchaseMeta={date:'',paidBy:'Parent Loan',source:''}; createdMeta={date:'',paidBy:'Parent Loan'}; tradeMeta={date:'',partner:'',notes:''}; saleMeta={date:'',status:'Paid',platform:'Instagram',notes:'',pricingMode:'line',orderItemTotal:'',delivery:false,deliveryLocation:'',deliveryFee:'',gasCost:'',gasPaidBy:'Business Cash'}; localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); location.reload();
 }
 
 function finishSetup(){
